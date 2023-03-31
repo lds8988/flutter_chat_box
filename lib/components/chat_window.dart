@@ -26,88 +26,83 @@ class _ChatWindowState extends State<ChatWindow> {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Expanded(
-              child: Scrollbar(
-                controller: _scrollController,
-                thumbVisibility: true,
-                child: BlocBuilder<MessageBloc, MessageState>(
-                  builder: (context, state) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      _scrollToNewMessage();
-                    });
-                    if (state.runtimeType == MessagesLoaded) {
-                      var currentState = state as MessagesLoaded;
-                      return ListView.builder(
-                        controller: _scrollController,
-                        itemCount: currentState.messages.length,
-                        itemBuilder: (context, index) {
-                          return _buildMessageCard(
-                              currentState.messages[index]);
-                        },
-                      );
-                    } else {
-                      return _buildExpandEmptyListView();
-                    }
-                  },
-                ),
-              ),
+    return Column(
+      children: [
+        Expanded(
+          child: Scrollbar(
+            controller: _scrollController,
+            thumbVisibility: true,
+            child: BlocBuilder<MessageBloc, MessageState>(
+              builder: (context, state) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  Future.delayed(
+                    const Duration(milliseconds: 500),
+                    () => _scrollToNewMessage(),
+                  );
+                });
+                if (state.runtimeType == MessagesLoaded) {
+                  var currentState = state as MessagesLoaded;
+                  return ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    controller: _scrollController,
+                    itemCount: currentState.messages.length,
+                    itemBuilder: (context, index) {
+                      return _buildMessageCard(currentState.messages[index]);
+                    },
+                  );
+                } else {
+                  return _buildExpandEmptyListView();
+                }
+              },
             ),
-            const SizedBox(height: 16),
-            Form(
-              key: _formKey, // 将 GlobalKey 赋值给 Form 组件的 key 属性
-              child: RawKeyboardListener(
-                focusNode: FocusNode(),
-                onKey: _handleKeyEvent,
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: _controller,
-                        decoration: InputDecoration(
-                          labelText: AppLocalizations.of(context)!.inputPrompt,
-                          hintText:
-                              AppLocalizations.of(context)!.inputPromptTips,
-                          floatingLabelBehavior: FloatingLabelBehavior.auto,
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide.none,
-                          ),
-                          filled: true,
-                        ),
-                        autovalidateMode: AutovalidateMode.always,
-                        maxLines: null,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    SizedBox(
-                      height: 48,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          _sendMessage();
-                        },
-                        style: ElevatedButton.styleFrom(
-                          shape: const RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(8))),
-                          padding: EdgeInsets.zero,
-                        ),
-                        child: const Icon(Icons.send),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
-      ),
+        Container(
+          constraints: const BoxConstraints(maxHeight: 100),
+          padding: const EdgeInsets.all(16),
+          child: RawKeyboardListener(
+            focusNode: FocusNode(),
+            onKey: _handleKeyEvent,
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _controller,
+                    decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context)!.inputPrompt,
+                      hintText: AppLocalizations.of(context)!.inputPromptTips,
+                      floatingLabelBehavior: FloatingLabelBehavior.auto,
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none,
+                      ),
+                      filled: true,
+                    ),
+                    maxLines: null,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                SizedBox(
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _sendMessage();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(8))),
+                      padding: EdgeInsets.zero,
+                    ),
+                    child: const Icon(Icons.send),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -127,6 +122,8 @@ class _ChatWindowState extends State<ChatWindow> {
 
   void _sendMessage() {
     final message = _controller.text;
+
+    _controller.text = "";
     if (message.isNotEmpty) {
       var conversationUuid =
           context.read<ConversationBloc>().state.currentConversationUuid;
@@ -254,6 +251,7 @@ class _ChatWindowState extends State<ChatWindow> {
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.max,
                 children: [
                   Text(
                     '${sceneList[index]["title"]}',
@@ -263,10 +261,14 @@ class _ChatWindowState extends State<ChatWindow> {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  Text(
-                    '${sceneList[index]["description"]}',
-                    style: const TextStyle(
-                      fontSize: 16,
+                  Expanded(
+                    child: Text(
+                      '${sceneList[index]["description"]}',
+                      maxLines: 10,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ),
                 ],

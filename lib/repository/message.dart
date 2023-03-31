@@ -37,7 +37,9 @@ class MessageRepository {
     List<OpenAIChatCompletionChoiceMessageModel> openAIMessages = messages
         .map((message) => OpenAIChatCompletionChoiceMessageModel(
               content: message.text,
-              role: message.role.toString().split('.').last,
+              role: message.role == Role.user
+                  ? OpenAIChatMessageRole.user
+                  : OpenAIChatMessageRole.assistant,
             ))
         .toList();
     var message = Message(

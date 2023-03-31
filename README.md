@@ -53,10 +53,4 @@ release dir  可以直接下载release版本，也可以:
 
 让我们一起改进，把这个App做得更加好用一些。
 
-# 给我打call
-
-
-如果你觉得对你有用，打赏我一杯咖啡。
-
-<img src="https://github.com/bravekingzhang/utools-code2flow-official/blob/main/shoukuanma.png" alt="收款码" style="width: 40%;" />
 
