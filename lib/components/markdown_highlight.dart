@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_chatgpt/cubit/setting_cubit.dart';
+import 'package:flutter_chatgpt/configs/config.dart';
+import 'package:flutter_chatgpt/configs/config_info.dart';
 import 'package:flutter_highlight/flutter_highlight.dart';
 import 'package:flutter_highlight/themes/atom-one-dark.dart';
 import 'package:flutter_highlight/themes/atom-one-light.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:markdown/markdown.dart' as md;
 
 class CodeElementBuilder extends MarkdownElementBuilder {
@@ -12,6 +13,7 @@ class CodeElementBuilder extends MarkdownElementBuilder {
   CodeElementBuilder(this.buildContext);
   @override
   Widget? visitElementAfter(md.Element element, TextStyle? preferredStyle) {
+
     var language = 'javascript';
 
     if (element.attributes['class'] != null) {
@@ -21,29 +23,32 @@ class CodeElementBuilder extends MarkdownElementBuilder {
     return SizedBox(
       width:
           MediaQueryData.fromWindow(WidgetsBinding.instance.window).size.width,
-      child: HighlightView(
-        // The original code to be highlighted
-        element.textContent,
+      child: Consumer(builder: (context, ref, child) {
 
-        // Specify language
-        // It is recommended to give it a value for performance
-        language: language,
+        ConfigInfo configInfo = ref.watch(configProvider);
 
-        // Specify highlight theme
-        // All available themes are listed in `themes` folder
-        theme: BlocProvider.of<UserSettingCubit>(buildContext).isDarkMode
-            ? atomOneDarkTheme
-            : atomOneLightTheme,
+        return HighlightView(
+          // The original code to be highlighted
+          element.textContent,
 
-        // Specify padding
-        padding: const EdgeInsets.all(8),
+          // Specify language
+          // It is recommended to give it a value for performance
+          language: language,
 
-        // Specify text style
-        textStyle: const TextStyle(
-          fontFamily: 'monospace',
-          fontSize: 14,
-        ),
-      ),
+          // Specify highlight theme
+          // All available themes are listed in `themes` folder
+          theme: configInfo.isDark ? atomOneDarkTheme : atomOneLightTheme,
+
+          // Specify padding
+          padding: const EdgeInsets.all(8),
+
+          // Specify text style
+          textStyle: const TextStyle(
+            fontFamily: 'monospace',
+            fontSize: 14,
+          ),
+        );
+      },),
     );
   }
 }

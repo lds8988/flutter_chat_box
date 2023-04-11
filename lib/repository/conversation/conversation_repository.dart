@@ -1,52 +1,9 @@
-import 'package:path/path.dart';
+import 'package:flutter_chatgpt/repository/msg/msg_info.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
 
-class Conversation {
-  String name;
-  String description;
-  String uuid;
+import 'conversation_info.dart';
 
-  Conversation(
-      {required this.name, required this.description, required this.uuid});
-
-  Map<String, dynamic> toMap() {
-    return {
-      'uuid': uuid,
-      'name': name,
-    };
-  }
-}
-
-class Message {
-  int? id;
-  String conversationId;
-  Role role;
-  String text;
-  Message(
-      {this.id,
-      required this.conversationId,
-      required this.text,
-      required this.role});
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'uuid': conversationId,
-      'role': role.index,
-      'text': text,
-    };
-  }
-
-  @override
-  String toString() {
-    return 'Message{id: $id, conversationId: $conversationId, role: $role, text: $text}';
-  }
-}
-
-enum Role {
-  system,
-  user,
-  assistant,
-}
 
 class ConversationRepository {
   static const String _tableConversationName = 'conversations';
@@ -61,7 +18,7 @@ class ConversationRepository {
 
   ConversationRepository._internal();
 
-  factory ConversationRepository() {
+  factory ConversationRepository.getInstance() {
     _instance ??= ConversationRepository._internal();
     return _instance!;
   }
@@ -69,6 +26,7 @@ class ConversationRepository {
   Future<Database> _getDb() async {
     if (_database == null) {
       final String path = join(await getDatabasesPath(), 'chatgpt.db');
+
       _database = await openDatabase(path, version: 1,
           onCreate: (Database db, int version) async {
         await db.execute('''
@@ -91,45 +49,34 @@ class ConversationRepository {
     return _database!;
   }
 
-  Future<List<Conversation>> getConversations() async {
+  Future<List<ConversationInfo>> getConversations() async {
     final db = await _getDb();
     final List<Map<String, dynamic>> maps =
         await db.query(_tableConversationName);
     return List.generate(maps.length, (i) {
       final uuid = maps[i][_columnUuid];
       final name = maps[i][_columnName];
-      return Conversation(
+      return ConversationInfo(
         uuid: uuid,
-        description: '',
         name: name,
       );
     });
   }
 
-  Future<void> addConversation(Conversation conversation) async {
+  Future<void> addConversation(ConversationInfo conversation) async {
     final db = await _getDb();
     await db.insert(
       _tableConversationName,
-      conversation.toMap(),
+      conversation.toJson(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
-    // final randomMessage = Message(
-    //   text: conversation.description,
-    //   role: Role.system,
-    //   conversationId: conversation.uuid,
-    // );
-    // await db.insert(
-    //   _tableMessageName,
-    //   randomMessage.toMap(),
-    //   conflictAlgorithm: ConflictAlgorithm.replace,
-    // );
   }
 
-  Future<void> updateConversation(Conversation conversation) async {
+  Future<void> updateConversation(ConversationInfo conversation) async {
     final db = await _getDb();
     await db.update(
       _tableConversationName,
-      conversation.toMap(),
+      conversation.toJson(),
       where: '$_columnUuid = ?',
       whereArgs: [conversation.uuid],
     );
@@ -151,29 +98,29 @@ class ConversationRepository {
     });
   }
 
-  Future<List<Message>> getMessagesByConversationUUid(String uuid) async {
+  Future<List<MsgInfo>> getMessagesByConversationUUid(String uuid) async {
     final db = await _getDb();
     final List<Map<String, dynamic>> maps = await db
         .query(_tableMessageName, where: '$_columnUuid = ?', whereArgs: [uuid]);
     return List.generate(maps.length, (i) {
-      final role = Role.values[maps[i][_columnRole]];
+      final role = maps[i][_columnRole];
       final text = maps[i][_columnText];
       final uuid = maps[i][_columnUuid];
       final id = maps[i][_columnId];
-      return Message(
+      return MsgInfo(
         id: id,
-        role: role,
+        roleInt: role,
         text: text,
         conversationId: uuid,
       );
     });
   }
 
-  Future<void> addMessage(Message message) async {
+  Future<void> addMessage(MsgInfo message) async {
     final db = await _getDb();
     await db.insert(
       _tableMessageName,
-      message.toMap(),
+      message.toJson(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }

@@ -1,61 +1,57 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_chatgpt/bloc/conversation_bloc.dart';
-import 'package:flutter_chatgpt/bloc/message_bloc.dart';
+import 'package:flutter_chatgpt/providers/conversation_list.dart';
+import 'package:flutter_chatgpt/providers/msg_list.dart';
+import 'package:flutter_chatgpt/providers/selected_conversation.dart';
 import 'package:flutter_chatgpt/components/markdown.dart';
-import 'package:flutter_chatgpt/device/form_factor.dart';
-import 'package:flutter_chatgpt/repository/conversation.dart';
+import 'package:flutter_chatgpt/repository/msg/msg_info.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:uuid/uuid.dart';
 
-var uuid = const Uuid();
-
-class ChatWindow extends StatefulWidget {
-  const ChatWindow({super.key});
+class ChatView extends ConsumerStatefulWidget {
+  const ChatView({super.key});
 
   @override
-  State<ChatWindow> createState() => _ChatWindowState();
+  ConsumerState<ChatView> createState() => _ChatViewState();
 }
 
-class _ChatWindowState extends State<ChatWindow> {
+class _ChatViewState extends ConsumerState<ChatView> {
   final _controller = TextEditingController();
-  final _formKey = GlobalKey<FormState>(); // 定义一个 GlobalKey
   final _scrollController = ScrollController();
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(selectedConversationProvider, (previous, next) {
+      final msg = ref.read(msgListProvider.notifier);
+      msg.initMsgList(next.uuid).then((value) {
+        _scrollToNewMessage();
+      });
+    });
+
+    ref.listen(msgListProvider, (previous, next) {
+      _scrollToNewMessage();
+    });
+
+    final msgList = ref.watch(msgListProvider);
+
     return Column(
       children: [
         Expanded(
-          child: Scrollbar(
-            controller: _scrollController,
-            thumbVisibility: true,
-            child: BlocBuilder<MessageBloc, MessageState>(
-              builder: (context, state) {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  Future.delayed(
-                    const Duration(milliseconds: 500),
-                    () => _scrollToNewMessage(),
-                  );
-                });
-                if (state.runtimeType == MessagesLoaded) {
-                  var currentState = state as MessagesLoaded;
-                  return ListView.builder(
+          child: msgList.isEmpty
+              ? _buildEmptyView()
+              : Scrollbar(
+                  controller: _scrollController,
+                  thumbVisibility: true,
+                  child: ListView.builder(
                     padding: const EdgeInsets.all(16),
                     controller: _scrollController,
-                    itemCount: currentState.messages.length,
+                    itemCount: msgList.length,
                     itemBuilder: (context, index) {
-                      return _buildMessageCard(currentState.messages[index]);
+                      return _buildMessageCard(msgList[index]);
                     },
-                  );
-                } else {
-                  return _buildExpandEmptyListView();
-                }
-              },
-            ),
-          ),
+                  ),
+                ),
         ),
         Container(
           constraints: const BoxConstraints(maxHeight: 100),
@@ -69,8 +65,8 @@ class _ChatWindowState extends State<ChatWindow> {
                   child: TextField(
                     controller: _controller,
                     decoration: InputDecoration(
-                      labelText: AppLocalizations.of(context)!.inputPrompt,
-                      hintText: AppLocalizations.of(context)!.inputPromptTips,
+                      labelText: AppLocalizations.of(context)!.inputQuestion,
+                      hintText: AppLocalizations.of(context)!.inputQuestionTips,
                       floatingLabelBehavior: FloatingLabelBehavior.auto,
                       contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 8),
@@ -106,42 +102,33 @@ class _ChatWindowState extends State<ChatWindow> {
     );
   }
 
-  String _newConversation(String name, String description) {
-    var conversation = Conversation(
-      name: name,
-      description: description,
-      uuid: uuid.v4(),
-    );
-    BlocProvider.of<ConversationBloc>(context).add(
-      AddConversationEvent(
-        conversation,
-      ),
-    );
-    return conversation.uuid;
-  }
-
-  void _sendMessage() {
+  Future<void> _sendMessage() async {
     final message = _controller.text;
 
     _controller.text = "";
     if (message.isNotEmpty) {
-      var conversationUuid =
-          context.read<ConversationBloc>().state.currentConversationUuid;
+      var conversationUuid = ref.read(selectedConversationProvider).uuid;
       if (conversationUuid.isEmpty) {
         // new conversation
-        conversationUuid = _newConversation(message, message);
+        var conversationInfo = await ref
+            .read(conversationListProvider.notifier)
+            .createConversation(message);
+
+        conversationUuid = conversationInfo.uuid;
       }
-      final newMessage = Message(
+
+      MsgInfo newMessage = MsgInfo(
         conversationId: conversationUuid,
-        role: Role.user,
+        roleInt: Role.user.index,
         text: message,
       );
-      context.read<MessageBloc>().add(SendMessageEvent(newMessage));
-      _formKey.currentState!.reset();
+
+      await ref.read(msgListProvider.notifier).sendMessage(newMessage);
+      _scrollToNewMessage();
     }
   }
 
-  Widget _buildMessageCard(Message message) {
+  Widget _buildMessageCard(MsgInfo message) {
     if (message.role == Role.user) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -225,98 +212,72 @@ class _ChatWindowState extends State<ChatWindow> {
 
   void _scrollToNewMessage() {
     if (_scrollController.hasClients) {
-      _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+      Future.delayed(
+        const Duration(milliseconds: 500),
+        () => _scrollController
+            .jumpTo(_scrollController.position.maxScrollExtent),
+      );
     }
   }
 
-  Widget _buildExpandEmptyListView() {
-    if (MediaQuery.of(context).size.width > FormFactor.tablet) {
-      return GridView.builder(
-        controller: _scrollController,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-        ),
-        itemCount: sceneList.length,
-        itemBuilder: (BuildContext context, int index) {
-          return GestureDetector(
-            onTap: () => {
-              _controller.text = (sceneList[index]["description"] as String)
-            },
-            child: Container(
-              margin: const EdgeInsets.all(8),
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: sceneList[index]["color"] as Color,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  Text(
-                    '${sceneList[index]["title"]}',
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Expanded(
-                    child: Text(
-                      '${sceneList[index]["description"]}',
-                      maxLines: 10,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+  Widget _buildEmptyView() {
+    return GridView.builder(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+      ),
+      itemCount: sceneList.length,
+      itemBuilder: (BuildContext context, int index) {
+        return GestureDetector(
+          onTap: () async {
+            var conversationInfo = await ref
+                .read(conversationListProvider.notifier)
+                .createConversation(sceneList[index]["title"] as String);
+
+            MsgInfo newMessage = MsgInfo(
+              conversationId: conversationInfo.uuid,
+              roleInt: Role.user.index,
+              text: sceneList[index]["description"] as String,
+            );
+
+            final msg = ref.read(msgListProvider.notifier);
+            await msg.sendMessage(newMessage);
+            _scrollToNewMessage();
+          },
+          child: Container(
+            margin: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: sceneList[index]["color"] as Color,
+              borderRadius: BorderRadius.circular(8),
             ),
-          );
-        },
-      );
-    } else {
-      return ListView.builder(
-        controller: _scrollController,
-        itemCount: sceneList.length,
-        itemBuilder: (BuildContext context, int index) {
-          return GestureDetector(
-            onTap: () => {
-              _controller.text = (sceneList[index]["description"] as String)
-            },
-            child: Container(
-              margin: const EdgeInsets.all(8),
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: sceneList[index]["color"] as Color,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    '${sceneList[index]["title"]}',
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Text(
+                  '${sceneList[index]["title"]}',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
                   ),
-                  const SizedBox(height: 10),
-                  Text(
+                ),
+                const SizedBox(height: 10),
+                Expanded(
+                  child: Text(
                     '${sceneList[index]["description"]}',
+                    maxLines: 10,
                     style: const TextStyle(
                       fontSize: 16,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          );
-        },
-      );
-    }
+          ),
+        );
+      },
+    );
   }
 }
 

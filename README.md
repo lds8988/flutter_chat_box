@@ -44,8 +44,6 @@ release dir  可以直接下载release版本，也可以:
 - 多语言支持
 - 单元测试
 - 组件测试
-- 优秀的全局数据管理方式 flutter_bloc
-- flutter_bloc_test
 - 主题切换
 - 统一的路由管理
 
