@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_chatgpt/components/chat/markdown_highlight.dart';
+import 'package:flutter_chatgpt/components/chat/markdown/code_hightlighter.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
 class Markdown extends StatelessWidget {
@@ -9,11 +9,11 @@ class Markdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return MarkdownBody(
       data: text,
+      selectable: true,
       builders: {
-        'code': CodeElementBuilder(context),
+        'code': CodeHighLighter(context),
       },
     );
   }

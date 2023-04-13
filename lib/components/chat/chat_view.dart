@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_chatgpt/components/chat/markdown.dart';
+import 'package:flutter_chatgpt/components/chat/markdown/markdown.dart';
 import 'package:flutter_chatgpt/providers/msg_list.dart';
 import 'package:flutter_chatgpt/repository/msg/msg_info.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

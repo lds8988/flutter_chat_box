@@ -97,8 +97,6 @@ class MessageRepository {
       _dio.httpClientAdapter = IOHttpClientAdapter(onHttpClientCreate: (client) {
         client.findProxy = (uri) {
 
-          LogUtil.d(configInfo, title: "config info");
-
           return "PROXY ${configInfo.ip}:${configInfo.port}";
         };
 

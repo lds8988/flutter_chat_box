@@ -20,8 +20,6 @@ class MsgList extends _$MsgList {
     List<MsgInfo> msgList = await ConversationRepository.getInstance()
         .getMessagesByConversationUUid(uuid);
 
-    LogUtil.d(msgList, title: "msg list");
-
     state = msgList.map((msgInfo) {
       if (msgInfo.state == MsgState.sending && msgInfo.role == Role.user) {
         msgInfo = msgInfo.copyWith(stateInt: MsgState.failed.index);
