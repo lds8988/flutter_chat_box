@@ -22,6 +22,8 @@ class ConfigInfo with _$ConfigInfo {
     @Default("https://api.openai.com") String baseUrl,
     @Default(false) bool useStream,
     @Default("gpt-3.5-turbo") String gptModel,
+    @Default("") String ip,
+    @Default("") String port,
   }) = _ConfigInfo;
 
   factory ConfigInfo.fromJson(Map<String, dynamic> json) =>

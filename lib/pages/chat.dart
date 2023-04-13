@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_chatgpt/components/chat_view.dart';
+import 'package:flutter_chatgpt/components/chat/chat_list_view.dart';
 import 'package:flutter_chatgpt/providers/conversation_list.dart';
 import 'package:flutter_chatgpt/providers/msg_list.dart';
+import 'package:flutter_chatgpt/repository/conversation/conversation_repository.dart';
 import 'package:flutter_chatgpt/repository/msg/msg_info.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -35,9 +36,11 @@ class _ChatPageState extends ConsumerState<ChatPage> {
             conversationId: conversationInfo.uuid,
             roleInt: Role.user.index,
             text: widget.msg!,
+            stateInt: MsgState.sending.index,
           );
 
-          ref.read(msgListProvider.notifier).sendMessage(newMessage);
+          ConversationRepository.getInstance().addMessage(newMessage);
+
         });
       });
     }
@@ -51,7 +54,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.appTitle),
       ),
-      body: const ChatView(),
+      body: const ChatListView(),
     );
   }
 }

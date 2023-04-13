@@ -17,8 +17,8 @@
   "inputQuestionTips": "在这里输入你的问题",
   "enterKey": "请输入你的 chat gpt key",
   "enterKeyTips": "请输在这里输入你的 chat gpt key",
-  "setProxyUrl": "请输入代理Url",
-  "setProxyUrlTips": "请在这里输入代理url，不填默认官方",
+  "setBaseUrl": "请输入请求 url",
+  "setBaseUrlTips": "请在这里输入请求的 url，不填默认官方",
   "ok": "确定",
   "cancel": "取消",
   "useStreamApi": "使用流式(Stream) API",
@@ -26,5 +26,12 @@
   "version": "版本",
   "notSelectConversationTip": "请先选择一个会话",
   "createByAsk": "通过提问创建会话",
-  "createByPrompt": "通过 prompt 创建会话"
+  "createByPrompt": "通过 prompt 创建会话",
+  "roleUser": "用户",
+  "roleAssistant": "智能助手",
+  "sendMsgErrTip": "发送消息失败，请重试！",
+  "setIp": "请输入 IP 地址",
+  "setIpTip": "请在这里输入 IP 地址",
+  "setPort": "请输入端口号",
+  "setPortTip": "请在这里输入端口号"
 }

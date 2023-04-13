@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_chatgpt/components/chat_view.dart';
+import 'package:flutter_chatgpt/components/chat/chat_list_view.dart';
 import 'package:flutter_chatgpt/components/conversation_list_view.dart';
 import 'package:flutter_chatgpt/configs/config.dart';
 import 'package:flutter_chatgpt/configs/config_info.dart';
 import 'package:flutter_chatgpt/device/form_factor.dart';
 import 'package:flutter_chatgpt/providers/conversation_list.dart';
 import 'package:flutter_chatgpt/providers/msg_list.dart';
+import 'package:flutter_chatgpt/repository/conversation/conversation_repository.dart';
 import 'package:flutter_chatgpt/repository/msg/msg_info.dart';
 import 'package:flutter_chatgpt/route/route.dart';
 import 'package:flutter_chatgpt/route/route_util.dart';
@@ -108,7 +109,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                   width: .3,
                   thickness: .3,
                 ),
-                const Expanded(child: ChatView()),
+                const Expanded(child: ChatListView()),
               ],
             ),
     );
@@ -153,61 +154,78 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   void _showCreateConversationByPromptDialog() {
-    showDialog(context: context, builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text(AppLocalizations.of(context)!.createByPrompt),
-        content: SizedBox(
-          width: 448,
-          height: 552,
-          child: ListView.builder(
-            itemCount: sceneList.length,
-            itemBuilder: (BuildContext context, int index) {
-              return GestureDetector(
-                onTap: ()  {
-                  Navigator.of(context).pop();
-                  RouteUtil.jumpToChatPage(context, msg: sceneList[index]["description"] as String);
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text(AppLocalizations.of(context)!.createByPrompt),
+            content: SizedBox(
+              width: 448,
+              height: 552,
+              child: ListView.builder(
+                itemCount: sceneList.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return GestureDetector(
+                    onTap: () {
+                      ref
+                          .read(conversationListProvider.notifier)
+                          .createConversation(
+                              sceneList[index]["title"] as String)
+                          .then((conversationInfo) {
+                        ConversationRepository.getInstance().addSystemMessage(
+                          conversationInfo.uuid,
+                          sceneList[index]["description"] as String,
+                        );
+
+                        Navigator.of(context).pop();
+
+                        RouteUtil.jumpToChatPage(
+                          context,
+                          conversationId: conversationInfo.uuid,
+                        );
+                      });
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: sceneList[index]["color"] as Color,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            '${sceneList[index]["title"]}',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            '${sceneList[index]["description"]}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
                 },
-                child: Container(
-                  margin: const EdgeInsets.all(8),
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: sceneList[index]["color"] as Color,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        '${sceneList[index]["title"]}',
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        '${sceneList[index]["description"]}',
-                        style: const TextStyle(
-                          fontSize: 16,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text(AppLocalizations.of(context)!.cancel),
-          ),
-        ],
-      );
-    });
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text(AppLocalizations.of(context)!.cancel),
+              ),
+            ],
+          );
+        });
   }
 
   void _showCreateConversationByAskDialog(
@@ -250,11 +268,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                 final message = controller.text;
 
                 if (message.isNotEmpty) {
-
                   Navigator.of(this.context).pop();
 
                   RouteUtil.jumpToChatPage(context, msg: message);
-
                 }
               },
               child: Text(AppLocalizations.of(context)!.ok),
@@ -333,11 +349,44 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   void _showSetting(BuildContext context) {
     ConfigInfo configInfo = ref.read(configProvider);
+    Config config = ref.watch(configProvider.notifier);
 
     final TextEditingController controllerApiKey =
         TextEditingController(text: configInfo.key);
-    final TextEditingController controllerProxy =
+    FocusNode apiKeyFocusNode = FocusNode();
+    apiKeyFocusNode.addListener(() {
+      if (!apiKeyFocusNode.hasFocus) {
+        config.setKey(controllerApiKey.text);
+      }
+    });
+
+
+    final TextEditingController controllerBaseUrl =
         TextEditingController(text: configInfo.baseUrl);
+    FocusNode baseUrlFocusNode = FocusNode();
+    baseUrlFocusNode.addListener(() {
+      if (!baseUrlFocusNode.hasFocus) {
+        config.setBaseUrl(controllerBaseUrl.text);
+      }
+    });
+
+    final TextEditingController controllerIp =
+    TextEditingController(text: configInfo.ip);
+    FocusNode ipFocusNode = FocusNode();
+    ipFocusNode.addListener(() {
+      if(!ipFocusNode.hasFocus) {
+        config.setIp(controllerIp.text);
+      }
+    });
+
+    final TextEditingController controllerPort =
+    TextEditingController(text: configInfo.port);
+    FocusNode portFocusNode = FocusNode();
+    portFocusNode.addListener(() {
+      if(!portFocusNode.hasFocus) {
+        config.setPort(controllerPort.text);
+      }
+    });
 
     bool isObscure = true;
 
@@ -350,7 +399,6 @@ class _HomePageState extends ConsumerState<HomePage> {
             title: Text(AppLocalizations.of(context)!.settings),
             content: Consumer(
               builder: (context, ref, widget) {
-                Config config = ref.watch(configProvider.notifier);
                 ConfigInfo configInfo = ref.watch(configProvider);
 
                 return SingleChildScrollView(
@@ -387,12 +435,13 @@ class _HomePageState extends ConsumerState<HomePage> {
                       const SizedBox(
                         height: 28,
                       ),
-                      TextFormField(
-                        controller: controllerProxy,
+                      TextField(
+                        focusNode: baseUrlFocusNode,
+                        controller: controllerBaseUrl,
                         decoration: InputDecoration(
-                          labelText: AppLocalizations.of(context)!.setProxyUrl,
+                          labelText: AppLocalizations.of(context)!.setBaseUrl,
                           hintText:
-                              AppLocalizations.of(context)!.setProxyUrlTips,
+                              AppLocalizations.of(context)!.setBaseUrlTips,
                           floatingLabelBehavior: FloatingLabelBehavior.auto,
                           contentPadding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 8),
@@ -402,16 +451,13 @@ class _HomePageState extends ConsumerState<HomePage> {
                           ),
                           filled: true,
                         ),
-                        autovalidateMode: AutovalidateMode.always,
                         maxLines: null,
-                        onChanged: (value) {
-                          config.setProxyUrl(value);
-                        },
                       ),
                       const SizedBox(
                         height: 28,
                       ),
-                      TextFormField(
+                      TextField(
+                        focusNode: apiKeyFocusNode,
                         controller: controllerApiKey,
                         decoration: InputDecoration(
                           labelText: AppLocalizations.of(context)!.enterKey,
@@ -436,28 +482,27 @@ class _HomePageState extends ConsumerState<HomePage> {
                             },
                           ),
                         ),
-                        autovalidateMode: AutovalidateMode.always,
                         maxLines: 1,
                         onChanged: (value) {
                           config.setKey(value);
                         },
                         obscureText: isObscure,
                       ),
-                      const SizedBox(
-                        height: 28,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(AppLocalizations.of(context)!.useStreamApi),
-                          Switch(
-                            value: configInfo.useStream,
-                            onChanged: (value) {
-                              config.setUseStream(value);
-                            },
-                          ),
-                        ],
-                      ),
+                      // const SizedBox(
+                      //   height: 28,
+                      // ),
+                      // Row(
+                      //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      //   children: [
+                      //     Text(AppLocalizations.of(context)!.useStreamApi),
+                      //     Switch(
+                      //       value: configInfo.useStream,
+                      //       onChanged: (value) {
+                      //         config.setUseStream(value);
+                      //       },
+                      //     ),
+                      //   ],
+                      // ),
                       const SizedBox(
                         height: 28,
                       ),
@@ -531,6 +576,46 @@ class _HomePageState extends ConsumerState<HomePage> {
                             ),
                           ],
                         ),
+                      const SizedBox(
+                        height: 28,
+                      ),
+                      TextField(
+                        focusNode: ipFocusNode,
+                        controller: controllerIp,
+                        decoration: InputDecoration(
+                          labelText: AppLocalizations.of(context)!.setIp,
+                          hintText: AppLocalizations.of(context)!.setIpTip,
+                          floatingLabelBehavior: FloatingLabelBehavior.auto,
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(5),
+                            borderSide: BorderSide.none,
+                          ),
+                          filled: true,
+                        ),
+                        maxLines: null,
+                      ),
+                      const SizedBox(
+                        height: 28,
+                      ),
+                      TextField(
+                        focusNode: portFocusNode,
+                        controller: controllerPort,
+                        decoration: InputDecoration(
+                          labelText: AppLocalizations.of(context)!.setPort,
+                          hintText: AppLocalizations.of(context)!.setPortTip,
+                          floatingLabelBehavior: FloatingLabelBehavior.auto,
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(5),
+                            borderSide: BorderSide.none,
+                          ),
+                          filled: true,
+                        ),
+                        maxLines: null,
+                      ),
                     ],
                   ),
                 );

@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_chatgpt/pages/home.dart';
 import 'package:flutter_chatgpt/pages/chat.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:go_router/go_router.dart';
 
 class Routes {
@@ -34,6 +35,7 @@ final GoRouter gRouter = GoRouter(
         }
 
       },
-    )
+    ),
   ],
+  observers: [FlutterSmartDialog.observer]
 );

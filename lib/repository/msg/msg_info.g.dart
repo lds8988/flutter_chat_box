@@ -11,6 +11,7 @@ _$_MsgInfo _$$_MsgInfoFromJson(Map<String, dynamic> json) => _$_MsgInfo(
       conversationId: json['uuid'] as String,
       text: json['text'] as String,
       roleInt: json['role'] as int,
+      stateInt: json['state'] as int,
     );
 
 Map<String, dynamic> _$$_MsgInfoToJson(_$_MsgInfo instance) =>
@@ -19,4 +20,5 @@ Map<String, dynamic> _$$_MsgInfoToJson(_$_MsgInfo instance) =>
       'uuid': instance.conversationId,
       'text': instance.text,
       'role': instance.roleInt,
+      'state': instance.stateInt,
     };

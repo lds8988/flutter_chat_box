@@ -1,44 +1,52 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_chatgpt/components/chat/chat_view.dart';
 import 'package:flutter_chatgpt/providers/conversation_list.dart';
 import 'package:flutter_chatgpt/providers/msg_list.dart';
 import 'package:flutter_chatgpt/providers/selected_conversation.dart';
-import 'package:flutter_chatgpt/components/markdown.dart';
+import 'package:flutter_chatgpt/repository/conversation/conversation_info.dart';
+import 'package:flutter_chatgpt/repository/conversation/conversation_repository.dart';
 import 'package:flutter_chatgpt/repository/msg/msg_info.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-class ChatView extends ConsumerStatefulWidget {
-  const ChatView({super.key});
+class ChatListView extends ConsumerStatefulWidget {
+  const ChatListView({super.key});
 
   @override
-  ConsumerState<ChatView> createState() => _ChatViewState();
+  ConsumerState<ChatListView> createState() => _ChatListViewState();
 }
 
-class _ChatViewState extends ConsumerState<ChatView> {
+class _ChatListViewState extends ConsumerState<ChatListView> {
   final _controller = TextEditingController();
   final _scrollController = ScrollController();
 
   @override
   Widget build(BuildContext context) {
+
     ref.listen(selectedConversationProvider, (previous, next) {
       final msg = ref.read(msgListProvider.notifier);
       msg.initMsgList(next.uuid).then((value) {
-        _scrollToNewMessage();
+        if (value.isNotEmpty) {
+          _scrollToNewMessage();
+        }
       });
     });
 
     ref.listen(msgListProvider, (previous, next) {
-      _scrollToNewMessage();
+      if (next.isNotEmpty) {
+        _scrollToNewMessage();
+      }
     });
 
     final msgList = ref.watch(msgListProvider);
 
+    final selectedConversation = ref.watch(selectedConversationProvider);
+
     return Column(
       children: [
         Expanded(
-          child: msgList.isEmpty
+          child: selectedConversation.uuid.isEmpty
               ? _buildEmptyView()
               : Scrollbar(
                   controller: _scrollController,
@@ -48,7 +56,7 @@ class _ChatViewState extends ConsumerState<ChatView> {
                     controller: _scrollController,
                     itemCount: msgList.length,
                     itemBuilder: (context, index) {
-                      return _buildMessageCard(msgList[index]);
+                      return ChatView(msgList[index]);
                     },
                   ),
                 ),
@@ -121,84 +129,11 @@ class _ChatViewState extends ConsumerState<ChatView> {
         conversationId: conversationUuid,
         roleInt: Role.user.index,
         text: message,
+        stateInt: MsgState.sending.index,
       );
 
       await ref.read(msgListProvider.notifier).sendMessage(newMessage);
       _scrollToNewMessage();
-    }
-  }
-
-  Widget _buildMessageCard(MsgInfo message) {
-    if (message.role == Role.user) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: const [
-              FaIcon(FontAwesomeIcons.person),
-              SizedBox(
-                width: 5,
-              ),
-              Text("User"),
-              SizedBox(
-                width: 10,
-              )
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Flexible(
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  margin: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: SelectableText(
-                        message.text,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      );
-    } else {
-      return Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              const SizedBox(
-                width: 10,
-              ),
-              const FaIcon(FontAwesomeIcons.robot),
-              const SizedBox(
-                width: 5,
-              ),
-              Text(message.role == Role.system ? "System" : "assistant"),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Flexible(
-                child: Card(
-                  margin: const EdgeInsets.all(8),
-                  child: Markdown(text: message.text),
-                ),
-              ),
-            ],
-          ),
-        ],
-      );
     }
   }
 
@@ -233,15 +168,10 @@ class _ChatViewState extends ConsumerState<ChatView> {
                 .read(conversationListProvider.notifier)
                 .createConversation(sceneList[index]["title"] as String);
 
-            MsgInfo newMessage = MsgInfo(
-              conversationId: conversationInfo.uuid,
-              roleInt: Role.user.index,
-              text: sceneList[index]["description"] as String,
+            ConversationRepository.getInstance().addSystemMessage(
+              conversationInfo.uuid,
+              sceneList[index]["description"] as String,
             );
-
-            final msg = ref.read(msgListProvider.notifier);
-            await msg.sendMessage(newMessage);
-            _scrollToNewMessage();
           },
           child: Container(
             margin: const EdgeInsets.all(8),

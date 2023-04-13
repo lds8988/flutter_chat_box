@@ -26,8 +26,18 @@ class Config extends _$Config {
     _saveToSp();
   }
 
-  void setProxyUrl(String baseUrl) {
+  void setBaseUrl(String baseUrl) {
     state = state.copyWith(baseUrl: baseUrl);
+    _saveToSp();
+  }
+
+  void setIp(String ip) {
+    state = state.copyWith(ip: ip);
+    _saveToSp();
+  }
+
+  void setPort(String port) {
+    state = state.copyWith(port: port);
     _saveToSp();
   }
 

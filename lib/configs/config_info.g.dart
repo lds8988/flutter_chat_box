@@ -14,6 +14,8 @@ _$_ConfigInfo _$$_ConfigInfoFromJson(Map<String, dynamic> json) =>
       baseUrl: json['baseUrl'] as String? ?? "https://api.openai.com",
       useStream: json['useStream'] as bool? ?? false,
       gptModel: json['gptModel'] as String? ?? "gpt-3.5-turbo",
+      ip: json['ip'] as String? ?? "",
+      port: json['port'] as String? ?? "",
     );
 
 Map<String, dynamic> _$$_ConfigInfoToJson(_$_ConfigInfo instance) =>
@@ -24,4 +26,6 @@ Map<String, dynamic> _$$_ConfigInfoToJson(_$_ConfigInfo instance) =>
       'baseUrl': instance.baseUrl,
       'useStream': instance.useStream,
       'gptModel': instance.gptModel,
+      'ip': instance.ip,
+      'port': instance.port,
     };

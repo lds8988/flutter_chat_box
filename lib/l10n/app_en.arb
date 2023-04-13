@@ -17,8 +17,8 @@
   "inputQuestionTips": "Input your question here",
   "enterKey": "Enter the chat gpt key",
   "enterKeyTips": "Enter the chat gpt key here",
-  "setProxyUrl": "Enter the proxy url",
-  "setProxyUrlTips": "Enter the proxy url here. If not, the default is official",
+  "setBaseUrl": "Enter the request url",
+  "setBaseUrlTips": "Enter the request url here. If not, the default is official",
   "ok": "OK",
   "cancel": "Cancel",
   "useStreamApi": "Use Stream API",
@@ -26,5 +26,12 @@
   "version": "version",
   "notSelectConversationTip": "please select a conversation first",
   "createByAsk": "create by ask question",
-  "createByPrompt": "create by prompt"
+  "createByPrompt": "create by prompt",
+  "roleUser": "user",
+  "roleAssistant": "assistant",
+  "sendMsgErrTip": "send message error, retry again please！",
+  "setIp": "input IP address",
+  "setIpTip": "input IP address here please",
+  "setPort": "input port number",
+  "setPortTip": "input port number here please"
 }

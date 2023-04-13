@@ -26,6 +26,8 @@ mixin _$ConfigInfo {
   String get baseUrl => throw _privateConstructorUsedError;
   bool get useStream => throw _privateConstructorUsedError;
   String get gptModel => throw _privateConstructorUsedError;
+  String get ip => throw _privateConstructorUsedError;
+  String get port => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -45,7 +47,9 @@ abstract class $ConfigInfoCopyWith<$Res> {
       String key,
       String baseUrl,
       bool useStream,
-      String gptModel});
+      String gptModel,
+      String ip,
+      String port});
 }
 
 /// @nodoc
@@ -67,6 +71,8 @@ class _$ConfigInfoCopyWithImpl<$Res, $Val extends ConfigInfo>
     Object? baseUrl = null,
     Object? useStream = null,
     Object? gptModel = null,
+    Object? ip = null,
+    Object? port = null,
   }) {
     return _then(_value.copyWith(
       isDark: null == isDark
@@ -93,6 +99,14 @@ class _$ConfigInfoCopyWithImpl<$Res, $Val extends ConfigInfo>
           ? _value.gptModel
           : gptModel // ignore: cast_nullable_to_non_nullable
               as String,
+      ip: null == ip
+          ? _value.ip
+          : ip // ignore: cast_nullable_to_non_nullable
+              as String,
+      port: null == port
+          ? _value.port
+          : port // ignore: cast_nullable_to_non_nullable
+              as String,
     ) as $Val);
   }
 }
@@ -111,7 +125,9 @@ abstract class _$$_ConfigInfoCopyWith<$Res>
       String key,
       String baseUrl,
       bool useStream,
-      String gptModel});
+      String gptModel,
+      String ip,
+      String port});
 }
 
 /// @nodoc
@@ -131,6 +147,8 @@ class __$$_ConfigInfoCopyWithImpl<$Res>
     Object? baseUrl = null,
     Object? useStream = null,
     Object? gptModel = null,
+    Object? ip = null,
+    Object? port = null,
   }) {
     return _then(_$_ConfigInfo(
       isDark: null == isDark
@@ -157,6 +175,14 @@ class __$$_ConfigInfoCopyWithImpl<$Res>
           ? _value.gptModel
           : gptModel // ignore: cast_nullable_to_non_nullable
               as String,
+      ip: null == ip
+          ? _value.ip
+          : ip // ignore: cast_nullable_to_non_nullable
+              as String,
+      port: null == port
+          ? _value.port
+          : port // ignore: cast_nullable_to_non_nullable
+              as String,
     ));
   }
 }
@@ -170,7 +196,9 @@ class _$_ConfigInfo extends _ConfigInfo {
       this.key = "",
       this.baseUrl = "https://api.openai.com",
       this.useStream = false,
-      this.gptModel = "gpt-3.5-turbo"})
+      this.gptModel = "gpt-3.5-turbo",
+      this.ip = "",
+      this.port = ""})
       : super._();
 
   factory _$_ConfigInfo.fromJson(Map<String, dynamic> json) =>
@@ -194,10 +222,16 @@ class _$_ConfigInfo extends _ConfigInfo {
   @override
   @JsonKey()
   final String gptModel;
+  @override
+  @JsonKey()
+  final String ip;
+  @override
+  @JsonKey()
+  final String port;
 
   @override
   String toString() {
-    return 'ConfigInfo(isDark: $isDark, localeStr: $localeStr, key: $key, baseUrl: $baseUrl, useStream: $useStream, gptModel: $gptModel)';
+    return 'ConfigInfo(isDark: $isDark, localeStr: $localeStr, key: $key, baseUrl: $baseUrl, useStream: $useStream, gptModel: $gptModel, ip: $ip, port: $port)';
   }
 
   @override
@@ -213,13 +247,15 @@ class _$_ConfigInfo extends _ConfigInfo {
             (identical(other.useStream, useStream) ||
                 other.useStream == useStream) &&
             (identical(other.gptModel, gptModel) ||
-                other.gptModel == gptModel));
+                other.gptModel == gptModel) &&
+            (identical(other.ip, ip) || other.ip == ip) &&
+            (identical(other.port, port) || other.port == port));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, isDark, localeStr, key, baseUrl, useStream, gptModel);
+  int get hashCode => Object.hash(runtimeType, isDark, localeStr, key, baseUrl,
+      useStream, gptModel, ip, port);
 
   @JsonKey(ignore: true)
   @override
@@ -242,7 +278,9 @@ abstract class _ConfigInfo extends ConfigInfo {
       final String key,
       final String baseUrl,
       final bool useStream,
-      final String gptModel}) = _$_ConfigInfo;
+      final String gptModel,
+      final String ip,
+      final String port}) = _$_ConfigInfo;
   const _ConfigInfo._() : super._();
 
   factory _ConfigInfo.fromJson(Map<String, dynamic> json) =
@@ -260,6 +298,10 @@ abstract class _ConfigInfo extends ConfigInfo {
   bool get useStream;
   @override
   String get gptModel;
+  @override
+  String get ip;
+  @override
+  String get port;
   @override
   @JsonKey(ignore: true)
   _$$_ConfigInfoCopyWith<_$_ConfigInfo> get copyWith =>

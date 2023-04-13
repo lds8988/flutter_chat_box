@@ -4,7 +4,6 @@ import 'package:path/path.dart';
 
 import 'conversation_info.dart';
 
-
 class ConversationRepository {
   static const String _tableConversationName = 'conversations';
   static const String _tableMessageName = 'messages';
@@ -13,6 +12,7 @@ class ConversationRepository {
   static const String _columnId = 'id';
   static const String _columnRole = 'role';
   static const String _columnText = 'text';
+  static const String _columnState = 'state';
   static Database? _database;
   static ConversationRepository? _instance;
 
@@ -41,6 +41,7 @@ class ConversationRepository {
             $_columnUuid TEXT,
             $_columnRole INTEGER,
             $_columnText TEXT,
+            $_columnState INTEGER,
             FOREIGN KEY ($_columnUuid) REFERENCES conversations($_columnUuid)
           )
         ''');
@@ -98,30 +99,89 @@ class ConversationRepository {
     });
   }
 
-  Future<List<MsgInfo>> getMessagesByConversationUUid(String uuid) async {
+  Future<List<MsgInfo>> getMessagesByConversationUUid(
+    String uuid, {
+    String order = "ASC",
+  }) async {
     final db = await _getDb();
-    final List<Map<String, dynamic>> maps = await db
-        .query(_tableMessageName, where: '$_columnUuid = ?', whereArgs: [uuid]);
+    // 根据conversation的uuid查询message，过滤掉stateInt为2并且roleInt为2的消息
+    final List<Map<String, dynamic>> maps = await db.rawQuery(
+      '''
+      SELECT * FROM $_tableMessageName
+      WHERE $_columnUuid = ?
+      AND NOT ($_columnState = ${MsgState.failed.index} AND $_columnRole = ${Role.assistant.index})
+      AND NOT $_columnRole = ${Role.system.index}
+      ORDER BY $_columnId $order
+      ''',
+      [uuid],
+    );
+
     return List.generate(maps.length, (i) {
-      final role = maps[i][_columnRole];
-      final text = maps[i][_columnText];
-      final uuid = maps[i][_columnUuid];
-      final id = maps[i][_columnId];
       return MsgInfo(
-        id: id,
-        roleInt: role,
-        text: text,
-        conversationId: uuid,
+        id: maps[i][_columnId],
+        roleInt: maps[i][_columnRole],
+        text: maps[i][_columnText],
+        conversationId: maps[i][_columnUuid],
+        stateInt: maps[i][_columnState],
       );
     });
   }
 
-  Future<void> addMessage(MsgInfo message) async {
+  Future<List<MsgInfo>> getSystemMessagesByConversationUuid(String uuid) async {
     final db = await _getDb();
-    await db.insert(
+    final List<Map<String, dynamic>> maps = await db.rawQuery(
+      '''
+      SELECT * FROM $_tableMessageName
+      WHERE $_columnUuid = ?
+      AND $_columnRole = ${Role.system.index}
+      ''',
+      [uuid],
+    );
+
+    return List.generate(maps.length, (i) {
+      return MsgInfo(
+        id: maps[i][_columnId],
+        roleInt: maps[i][_columnRole],
+        text: maps[i][_columnText],
+        conversationId: maps[i][_columnUuid],
+        stateInt: maps[i][_columnState],
+      );
+    });
+  }
+
+  Future<int> addMessage(MsgInfo message) async {
+    final db = await _getDb();
+    return await db.insert(
       _tableMessageName,
       message.toJson(),
       conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<int> addSystemMessage(String conversationId, String text) async {
+
+    var systemMsgInfo = MsgInfo(
+      conversationId: conversationId,
+      text: text,
+      roleInt: Role.system.index,
+      stateInt: MsgState.received.index,
+    );
+
+    final db = await _getDb();
+    return await db.insert(
+      _tableMessageName,
+      systemMsgInfo.toJson(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<void> updateMessage(MsgInfo msgInfo) async {
+    final db = await _getDb();
+    await db.update(
+      _tableMessageName,
+      msgInfo.toJson(),
+      where: '$_columnId = ?',
+      whereArgs: [msgInfo.id],
     );
   }
 

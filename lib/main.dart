@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_chatgpt/configs/config.dart';
 import 'package:flutter_chatgpt/utils/sharded_preference/sp_util.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_chatgpt/route/route.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,7 +27,7 @@ void main() async {
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             locale: locale,
-            builder: EasyLoading.init(),
+            builder: FlutterSmartDialog.init(),
             debugShowCheckedModeBanner: false,
           );
         },
