@@ -5,6 +5,8 @@ import 'package:flutter_chatgpt/configs/config.dart';
 import 'package:flutter_chatgpt/configs/config_info.dart';
 import 'package:flutter_chatgpt/device/form_factor.dart';
 import 'package:flutter_chatgpt/providers/conversation_list.dart';
+import 'package:flutter_chatgpt/providers/selected_conversation.dart';
+import 'package:flutter_chatgpt/repository/conversation/conversation_info.dart';
 import 'package:flutter_chatgpt/repository/conversation/conversation_repository.dart';
 import 'package:flutter_chatgpt/route/route_util.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -96,6 +98,27 @@ class _HomePageState extends ConsumerState<HomePage> {
                       Expanded(
                         child: ConversationListView(
                             AppLocalizations.of(context)!.noConversationTips),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          ref
+                              .read(selectedConversationProvider.notifier)
+                              .update(ConversationInfo(name: "", uuid: ""));
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.add_box),
+                              const SizedBox(
+                                width: 10,
+                              ),
+                              Text(
+                                AppLocalizations.of(context)!.newConversation,
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                       _buildBottom(),
                     ],
@@ -356,7 +379,6 @@ class _HomePageState extends ConsumerState<HomePage> {
       }
     });
 
-
     final TextEditingController controllerBaseUrl =
         TextEditingController(text: configInfo.baseUrl);
     FocusNode baseUrlFocusNode = FocusNode();
@@ -367,19 +389,19 @@ class _HomePageState extends ConsumerState<HomePage> {
     });
 
     final TextEditingController controllerIp =
-    TextEditingController(text: configInfo.ip);
+        TextEditingController(text: configInfo.ip);
     FocusNode ipFocusNode = FocusNode();
     ipFocusNode.addListener(() {
-      if(!ipFocusNode.hasFocus) {
+      if (!ipFocusNode.hasFocus) {
         config.setIp(controllerIp.text);
       }
     });
 
     final TextEditingController controllerPort =
-    TextEditingController(text: configInfo.port);
+        TextEditingController(text: configInfo.port);
     FocusNode portFocusNode = FocusNode();
     portFocusNode.addListener(() {
-      if(!portFocusNode.hasFocus) {
+      if (!portFocusNode.hasFocus) {
         config.setPort(controllerPort.text);
       }
     });
