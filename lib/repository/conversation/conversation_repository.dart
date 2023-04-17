@@ -1,4 +1,5 @@
 import 'package:flutter_chatgpt/repository/msg/msg_info.dart';
+import 'package:flutter_chatgpt/utils/log_util.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -13,6 +14,7 @@ class ConversationRepository {
   static const String _columnRole = 'role';
   static const String _columnText = 'text';
   static const String _columnState = 'state';
+  static const String _columnFinishReason = 'finish_reason';
   static Database? _database;
   static ConversationRepository? _instance;
 
@@ -27,7 +29,7 @@ class ConversationRepository {
     if (_database == null) {
       final String path = join(await getDatabasesPath(), 'chatgpt.db');
 
-      _database = await openDatabase(path, version: 1,
+      _database = await openDatabase(path, version: 2,
           onCreate: (Database db, int version) async {
         await db.execute('''
           CREATE TABLE $_tableConversationName (
@@ -42,9 +44,16 @@ class ConversationRepository {
             $_columnRole INTEGER,
             $_columnText TEXT,
             $_columnState INTEGER,
+            $_columnFinishReason TEXT,
             FOREIGN KEY ($_columnUuid) REFERENCES conversations($_columnUuid)
           )
         ''');
+      }, onUpgrade: (Database db, int oldVersion, int newVersion) async {
+        if (oldVersion == 1 && newVersion == 2) {
+          await db.execute('''
+            ALTER TABLE $_tableMessageName ADD COLUMN $_columnFinishReason TEXT
+          ''');
+        }
       });
     }
     return _database!;
@@ -123,6 +132,7 @@ class ConversationRepository {
         text: maps[i][_columnText],
         conversationId: maps[i][_columnUuid],
         stateInt: maps[i][_columnState],
+        finishReason: maps[i][_columnFinishReason] ?? 'null',
       );
     });
   }
@@ -145,11 +155,13 @@ class ConversationRepository {
         text: maps[i][_columnText],
         conversationId: maps[i][_columnUuid],
         stateInt: maps[i][_columnState],
+        finishReason: maps[i][_columnFinishReason] ?? 'null',
       );
     });
   }
 
   Future<int> addMessage(MsgInfo message) async {
+
     final db = await _getDb();
     return await db.insert(
       _tableMessageName,

@@ -10,6 +10,7 @@ import 'package:flutter_chatgpt/utils/log_util.dart';
 import 'package:flutter_chatgpt/utils/sharded_preference/sp_keys.dart';
 import 'package:flutter_chatgpt/utils/sharded_preference/sp_util.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+import 'package:tiktoken/tiktoken.dart';
 
 class MessageRepository {
   static final MessageRepository _instance = MessageRepository._internal();
@@ -24,53 +25,91 @@ class MessageRepository {
     init();
   }
 
-  int countTokens(String text) {
-    // 将文本按照 UTF-8 编码进行分割
-    List<int> utf8Bytes = text.codeUnits;
+  int calTokensFromMessages(List<Map<String, dynamic>> messages,
+      {String model = "gpt-3.5-turbo-0301"}) {
+    final encoding = encodingForModel(model);
 
-    // 遍历 UTF-8 编码的字节序列，判断每个字节是否属于多字节字符的一部分
-    int tokens = 0;
-    for (int i = 0; i < utf8Bytes.length; i++) {
-      if ((utf8Bytes[i] & 0xC0) != 0x80) {
-        tokens++; // 每个非多字节字符都算作一个 token
-      }
+    int tokensPerMessage = 0;
+    int tokensPerName = 1;
+
+    switch (model) {
+      case "gpt-3.5-turbo":
+        // gpt-3.5-turbo may change over time. Returning num tokens assuming gpt-3.5-turbo-0301
+        return calTokensFromMessages(messages, model: "gpt-3.5-turbo-0301");
+      case "gpt-4":
+        // gpt-4 may change over time. Returning num tokens assuming gpt-4-0314
+        return calTokensFromMessages(messages, model: "gpt-4-0314");
+      case "gpt-3.5-turbo-0301":
+        tokensPerMessage = 4;
+        tokensPerName = -1;
+        break;
+      case "gpt-4-0314":
+        tokensPerMessage = 3;
+        tokensPerName = 1;
+        break;
+      default:
+        throw Exception(
+            "Unknown model: $model, See https://github.com/openai/openai-python/blob/main/chatml.md for information on how messages are converted to tokens.");
     }
 
-    return tokens;
+    int numTokens = 0;
+    for (Map message in messages) {
+      numTokens += tokensPerMessage;
+      for (String key in message.keys) {
+        String value = message[key];
+        numTokens += encoding.encode(value).length;
+        if (key == "name") {
+          numTokens += tokensPerName;
+        }
+      }
+    }
+    numTokens += 3;
+    return numTokens;
   }
 
   void postMessage(
     String conversationId, {
     ValueChanged<String>? onResponse,
     ValueChanged<String>? onError,
-    ValueChanged<String>? onSuccess,
+    ValueChanged<Map<String, dynamic>>? onSuccess,
   }) async {
+    ConfigInfo configInfo = _getConfigInfo();
+
+    String model = configInfo.gptModel;
 
     List<MsgInfo> messages = await ConversationRepository.getInstance()
         .getSystemMessagesByConversationUuid(conversationId);
 
-    int totalTokens = 0;
+    int systemMsgCount = messages.length;
+
+    List<Map<String, String>> openAIMessages = messages
+        .map((message) => {
+              'role': message.roleStr,
+              'content': message.text,
+            })
+        .toList();
+
+    int totalTokens = calTokensFromMessages(openAIMessages, model: model);
 
     List<MsgInfo> allMessages = await ConversationRepository.getInstance()
         .getMessagesByConversationUUid(conversationId, order: "DESC");
 
-    messages.add(allMessages[0]);
-
-    for (var message in messages) {
-      totalTokens += countTokens(message.text);
-    }
-
     // 在不超过 open ai 规定最大 token 总数的情况下尽量多添加消息
-    for (int i = 1; i < allMessages.length - 1; i++) {
-      int msgTokens = countTokens(allMessages[i].text);
-      if (totalTokens + msgTokens <= 4096) {
-        totalTokens += msgTokens;
-        if(messages.length > 1) {
-          messages.insert(messages.length - 1, allMessages[i]);
-        } else {
-          messages.add(allMessages[i]);
-        }
+    for (int i = 0; i < allMessages.length; i++) {
+      Map<String, String> openAIMsg = {
+        'role': allMessages[i].roleStr,
+        'content': allMessages[i].text,
+      };
 
+      int msgTokens = calTokensFromMessages(
+        [openAIMsg],
+        model: model,
+      );
+
+      if (totalTokens + msgTokens <= 3096) {
+        totalTokens += msgTokens;
+
+        openAIMessages.insert(systemMsgCount, openAIMsg);
       } else {
         break;
       }
@@ -78,25 +117,16 @@ class MessageRepository {
 
     LogUtil.i("total tokens: $totalTokens");
 
-    List<Map<String, dynamic>> openAIMessages = messages
-        .map((message) => {
-              'role': message.roleStr,
-              'content': message.text,
-            })
-        .toList();
-
-    ConfigInfo configInfo = _getConfigInfo();
-
     _dio.options.baseUrl = configInfo.baseUrl;
     _dio.options.headers = {
-      'Authorization': 'Bearer ${configInfo.key}', // 替换为您的实际 API 密钥
+      'Authorization': 'Bearer ${configInfo.key}',
       'Content-Type': 'application/json',
     };
 
-    if(configInfo.ip.isNotEmpty && configInfo.port.isNotEmpty) {
-      _dio.httpClientAdapter = IOHttpClientAdapter(onHttpClientCreate: (client) {
+    if (configInfo.ip.isNotEmpty && configInfo.port.isNotEmpty) {
+      _dio.httpClientAdapter =
+          IOHttpClientAdapter(onHttpClientCreate: (client) {
         client.findProxy = (uri) {
-
           return "PROXY ${configInfo.ip}:${configInfo.port}";
         };
 
@@ -109,16 +139,15 @@ class MessageRepository {
 
     try {
       final response = await _dio.post('/v1/chat/completions', data: {
-        'model': configInfo.gptModel,
+        'model': model,
         'messages': openAIMessages,
-        'max_tokens': 2048,
+        'max_tokens': 4097 - totalTokens, // 4097 是 open ai 规定的最大 token 总数，messages 的 token 总数和 max_tokens 的和不能超过 4097
       });
 
       if (response.statusCode == 200) {
         if (onSuccess != null) {
-          String message = response.data['choices'][0]['message']['content'];
 
-          onSuccess(message);
+          onSuccess(response.data);
         }
       } else {
         if (onError != null) {
@@ -133,7 +162,6 @@ class MessageRepository {
   }
 
   void init() {
-
     _dio = Dio();
 
     _dio.interceptors.add(PrettyDioLogger(
@@ -142,7 +170,6 @@ class MessageRepository {
       responseHeader: true,
       maxWidth: 130,
     ));
-
   }
 
   ConfigInfo _getConfigInfo() {

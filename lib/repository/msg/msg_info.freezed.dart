@@ -28,6 +28,8 @@ mixin _$MsgInfo {
   int get roleInt => throw _privateConstructorUsedError;
   @JsonKey(name: "state")
   int get stateInt => throw _privateConstructorUsedError;
+  @JsonKey(name: "finish_reason")
+  String get finishReason => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -44,7 +46,8 @@ abstract class $MsgInfoCopyWith<$Res> {
       @JsonKey(name: 'uuid') String conversationId,
       String text,
       @JsonKey(name: 'role') int roleInt,
-      @JsonKey(name: "state") int stateInt});
+      @JsonKey(name: "state") int stateInt,
+      @JsonKey(name: "finish_reason") String finishReason});
 }
 
 /// @nodoc
@@ -65,6 +68,7 @@ class _$MsgInfoCopyWithImpl<$Res, $Val extends MsgInfo>
     Object? text = null,
     Object? roleInt = null,
     Object? stateInt = null,
+    Object? finishReason = null,
   }) {
     return _then(_value.copyWith(
       id: freezed == id
@@ -87,6 +91,10 @@ class _$MsgInfoCopyWithImpl<$Res, $Val extends MsgInfo>
           ? _value.stateInt
           : stateInt // ignore: cast_nullable_to_non_nullable
               as int,
+      finishReason: null == finishReason
+          ? _value.finishReason
+          : finishReason // ignore: cast_nullable_to_non_nullable
+              as String,
     ) as $Val);
   }
 }
@@ -103,7 +111,8 @@ abstract class _$$_MsgInfoCopyWith<$Res> implements $MsgInfoCopyWith<$Res> {
       @JsonKey(name: 'uuid') String conversationId,
       String text,
       @JsonKey(name: 'role') int roleInt,
-      @JsonKey(name: "state") int stateInt});
+      @JsonKey(name: "state") int stateInt,
+      @JsonKey(name: "finish_reason") String finishReason});
 }
 
 /// @nodoc
@@ -121,6 +130,7 @@ class __$$_MsgInfoCopyWithImpl<$Res>
     Object? text = null,
     Object? roleInt = null,
     Object? stateInt = null,
+    Object? finishReason = null,
   }) {
     return _then(_$_MsgInfo(
       id: freezed == id
@@ -143,6 +153,10 @@ class __$$_MsgInfoCopyWithImpl<$Res>
           ? _value.stateInt
           : stateInt // ignore: cast_nullable_to_non_nullable
               as int,
+      finishReason: null == finishReason
+          ? _value.finishReason
+          : finishReason // ignore: cast_nullable_to_non_nullable
+              as String,
     ));
   }
 }
@@ -155,7 +169,8 @@ class _$_MsgInfo extends _MsgInfo {
       @JsonKey(name: 'uuid') required this.conversationId,
       required this.text,
       @JsonKey(name: 'role') required this.roleInt,
-      @JsonKey(name: "state") required this.stateInt})
+      @JsonKey(name: "state") required this.stateInt,
+      @JsonKey(name: "finish_reason") this.finishReason = 'null'})
       : super._();
 
   factory _$_MsgInfo.fromJson(Map<String, dynamic> json) =>
@@ -174,10 +189,13 @@ class _$_MsgInfo extends _MsgInfo {
   @override
   @JsonKey(name: "state")
   final int stateInt;
+  @override
+  @JsonKey(name: "finish_reason")
+  final String finishReason;
 
   @override
   String toString() {
-    return 'MsgInfo(id: $id, conversationId: $conversationId, text: $text, roleInt: $roleInt, stateInt: $stateInt)';
+    return 'MsgInfo(id: $id, conversationId: $conversationId, text: $text, roleInt: $roleInt, stateInt: $stateInt, finishReason: $finishReason)';
   }
 
   @override
@@ -191,13 +209,15 @@ class _$_MsgInfo extends _MsgInfo {
             (identical(other.text, text) || other.text == text) &&
             (identical(other.roleInt, roleInt) || other.roleInt == roleInt) &&
             (identical(other.stateInt, stateInt) ||
-                other.stateInt == stateInt));
+                other.stateInt == stateInt) &&
+            (identical(other.finishReason, finishReason) ||
+                other.finishReason == finishReason));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, id, conversationId, text, roleInt, stateInt);
+  int get hashCode => Object.hash(
+      runtimeType, id, conversationId, text, roleInt, stateInt, finishReason);
 
   @JsonKey(ignore: true)
   @override
@@ -219,7 +239,8 @@ abstract class _MsgInfo extends MsgInfo {
       @JsonKey(name: 'uuid') required final String conversationId,
       required final String text,
       @JsonKey(name: 'role') required final int roleInt,
-      @JsonKey(name: "state") required final int stateInt}) = _$_MsgInfo;
+      @JsonKey(name: "state") required final int stateInt,
+      @JsonKey(name: "finish_reason") final String finishReason}) = _$_MsgInfo;
   _MsgInfo._() : super._();
 
   factory _MsgInfo.fromJson(Map<String, dynamic> json) = _$_MsgInfo.fromJson;
@@ -237,6 +258,9 @@ abstract class _MsgInfo extends MsgInfo {
   @override
   @JsonKey(name: "state")
   int get stateInt;
+  @override
+  @JsonKey(name: "finish_reason")
+  String get finishReason;
   @override
   @JsonKey(ignore: true)
   _$$_MsgInfoCopyWith<_$_MsgInfo> get copyWith =>

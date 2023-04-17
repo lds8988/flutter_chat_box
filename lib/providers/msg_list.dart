@@ -62,10 +62,15 @@ class MsgList extends _$MsgList {
 
     MessageRepository().postMessage(
       userMsgInfo.conversationId,
-      onSuccess: (receivedMsg) async {
+      onSuccess: (responseData) async {
+
+        String message = responseData['choices'][0]['message']['content'];
+        String finishReason = responseData['choices'][0]['finish_reason'];
+
         newMsgInfo = newMsgInfo.copyWith(
-          text: receivedMsg,
+          text: message,
           stateInt: MsgState.received.index,
+          finishReason: finishReason,
         );
 
         int newMsgId =
@@ -84,14 +89,14 @@ class MsgList extends _$MsgList {
               msgInfo.copyWith(
                 id: newMsgId,
                 stateInt: MsgState.received.index,
-                text: receivedMsg,
+                text: message,
+                finishReason: finishReason,
               )
             else
               msgInfo,
         ];
       },
       onError: (error) async {
-        LogUtil.e(error, title: "send message error");
 
         if (error.isEmpty) {
           error = AppLocalizations.of(state as BuildContext)!.sendMsgErrTip;

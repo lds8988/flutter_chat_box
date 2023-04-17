@@ -33,5 +33,6 @@
   "setIp": "input IP address",
   "setIpTip": "input IP address here please",
   "setPort": "input port number",
-  "setPortTip": "input port number here please"
+  "setPortTip": "input port number here please",
+  "continueConversation": "continue"
 }

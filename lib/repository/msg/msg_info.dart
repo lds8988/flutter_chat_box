@@ -29,6 +29,7 @@ class MsgInfo with _$MsgInfo {
     required String text,
     @JsonKey(name: 'role') required int roleInt,
     @JsonKey(name: "state")required int stateInt,
+    @JsonKey(name: "finish_reason") @Default('null') String finishReason,
   }) = _MsgInfo;
 
   factory MsgInfo.fromJson(Map<String, dynamic> json) =>

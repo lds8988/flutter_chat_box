@@ -3,14 +3,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_chatgpt/components/chat/markdown/markdown.dart';
 import 'package:flutter_chatgpt/providers/msg_list.dart';
 import 'package:flutter_chatgpt/repository/msg/msg_info.dart';
+import 'package:flutter_chatgpt/utils/log_util.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ChatView extends ConsumerStatefulWidget {
-  const ChatView(this.msgInfo, {Key? key}) : super(key: key);
+  const ChatView(
+    this.msgInfo,
+    this.showContinueBtn, {
+    Key? key,
+  }) : super(key: key);
 
   final MsgInfo msgInfo;
+  final bool showContinueBtn;
 
   @override
   ConsumerState<ChatView> createState() => _ChatViewState();
@@ -47,7 +53,10 @@ class _ChatViewState extends ConsumerState<ChatView> {
                 child: Container(
                   height: 24,
                   margin: const EdgeInsets.only(right: 5),
-                  child: const Icon(Icons.refresh, color: Colors.red,),
+                  child: const Icon(
+                    Icons.refresh,
+                    color: Colors.red,
+                  ),
                 ),
               ),
             FaIcon(_isUser ? FontAwesomeIcons.person : FontAwesomeIcons.robot),
@@ -57,7 +66,7 @@ class _ChatViewState extends ConsumerState<ChatView> {
             Text(_isUser
                 ? AppLocalizations.of(context)!.roleUser
                 : AppLocalizations.of(context)!.roleAssistant),
-            if(!_isUser && widget.msgInfo.state == MsgState.sending)
+            if (!_isUser && widget.msgInfo.state == MsgState.sending)
               const Padding(
                 padding: EdgeInsets.only(left: 8.0),
                 child: CupertinoActivityIndicator(
@@ -79,11 +88,48 @@ class _ChatViewState extends ConsumerState<ChatView> {
                   ? SelectableText(
                       widget.msgInfo.text,
                     )
-                  : Markdown(text: widget.msgInfo.text),
+                  : buildReplyContent(),
             ),
           ),
         ),
       ],
     );
+  }
+
+  Widget buildReplyContent() {
+    Widget replyContent = Markdown(
+      text: widget.msgInfo.text,
+    );
+
+    if (widget.showContinueBtn) {
+      replyContent = Column(
+        children: [
+          replyContent,
+          const Divider(),
+          GestureDetector(
+            onTap: () {
+              MsgInfo newMessage = MsgInfo(
+                conversationId: widget.msgInfo.conversationId,
+                roleInt: Role.user.index,
+                text: AppLocalizations.of(context)!.continueConversation,
+                stateInt: MsgState.sending.index,
+              );
+
+              ref.read(msgListProvider.notifier).sendMessage(
+                    newMessage,
+                  );
+            },
+            child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.only(top: 8),
+                alignment: Alignment.center,
+                child:
+                    Text(AppLocalizations.of(context)!.continueConversation)),
+          ),
+        ],
+      );
+    }
+
+    return replyContent;
   }
 }

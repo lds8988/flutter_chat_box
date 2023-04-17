@@ -12,6 +12,7 @@ _$_MsgInfo _$$_MsgInfoFromJson(Map<String, dynamic> json) => _$_MsgInfo(
       text: json['text'] as String,
       roleInt: json['role'] as int,
       stateInt: json['state'] as int,
+      finishReason: json['finish_reason'] as String? ?? 'null',
     );
 
 Map<String, dynamic> _$$_MsgInfoToJson(_$_MsgInfo instance) =>
@@ -21,4 +22,5 @@ Map<String, dynamic> _$$_MsgInfoToJson(_$_MsgInfo instance) =>
       'text': instance.text,
       'role': instance.roleInt,
       'state': instance.stateInt,
+      'finish_reason': instance.finishReason,
     };

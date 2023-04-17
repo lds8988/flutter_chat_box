@@ -33,5 +33,6 @@
   "setIp": "请输入 IP 地址",
   "setIpTip": "请在这里输入 IP 地址",
   "setPort": "请输入端口号",
-  "setPortTip": "请在这里输入端口号"
+  "setPortTip": "请在这里输入端口号",
+  "continueConversation": "继续"
 }

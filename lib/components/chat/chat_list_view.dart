@@ -23,7 +23,6 @@ class _ChatListViewState extends ConsumerState<ChatListView> {
 
   @override
   Widget build(BuildContext context) {
-
     ref.listen(selectedConversationProvider, (previous, next) {
       final msg = ref.read(msgListProvider.notifier);
       msg.initMsgList(next.uuid).then((value) {
@@ -56,7 +55,13 @@ class _ChatListViewState extends ConsumerState<ChatListView> {
                     controller: _scrollController,
                     itemCount: msgList.length,
                     itemBuilder: (context, index) {
-                      return ChatView(msgList[index]);
+                      MsgInfo msgInfo = msgList[index];
+
+                      return ChatView(
+                        msgInfo,
+                        index == msgList.length - 1 &&
+                            msgInfo.finishReason == 'length',
+                      );
                     },
                   ),
                 ),
@@ -220,17 +225,28 @@ var sceneList = [
   {
     "title": "后端开发",
     "color": Colors.green[300],
-    "description": "需要你扮演技术精湛的后端开发工程师，解决前端问题"
+    "description": "需要你扮演技术精湛的后端开发工程师，解决后端问题"
   },
   {
-    "title": "决策",
+    "title": "小红书标题",
     "color": Colors.purple[300],
-    "description": "需要你扮演公司高管，做出各种决策"
+    "description": '''
+      💃 10S自测适合裙子or裤子 (结果)\n
+      ✂️ 旧衣改造穿出新花样 (事件)\n
+      👗 穿搭博主 vs 现实中穿搭 (对比)\n
+      🔢 4种体型女生穿搭技巧！ (解决方案)\n
+      🎨 最显白颜色穿搭 (结果)\n
+      🙋 当代女生买裙子难处 (细分人群+共鸣)\n
+      👠 双开门衣柜装鞋情况 (数字+结果)\n
+      👗 微胖穿搭建议 (细分人群+数字)\n
+      🧦 万能袜子搭配公式 (解决方案+结果)\n
+      请基于上述小红书标题和括号里的编写逻辑，针对用户输入生成10个新的小红书标题，标题中应当使用恰当的emoji表情
+      '''
   },
   {
-    "title": "架构师",
+    "title": "Prompt 编写导师",
     "color": Colors.orange[300],
-    "description": "需要你扮演技术精湛的架构师，解决架构设计问题"
+    "description": "需要你扮演Prompt 编写导师，我写一段话，你帮我写Prompt"
   },
   {
     "title": "小程序开发",
