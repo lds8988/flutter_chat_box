@@ -54,20 +54,22 @@ class _HomePageState extends ConsumerState<HomePage> {
       drawer: _isPhoneSize
           ? Drawer(
               backgroundColor: configInfo.themeData.cardColor,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ListTile(
-                    title: Text(AppLocalizations.of(context)!.settings),
-                    leading: const Icon(Icons.settings),
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      _showSetting(context);
-                    },
-                  ),
-                  const Spacer(),
-                  _buildVersionView(),
-                ],
+              child: SafeArea(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ListTile(
+                      title: Text(AppLocalizations.of(context)!.settings),
+                      leading: const Icon(Icons.settings),
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        _showSetting(context);
+                      },
+                    ),
+                    const Spacer(),
+                    _buildVersionView(),
+                  ],
+                ),
               ),
             )
           : null,
@@ -79,13 +81,15 @@ class _HomePageState extends ConsumerState<HomePage> {
                       AppLocalizations.of(context)!.noConversationTipsPhone),
                 ),
                 _buildDivider(),
-                _buildOptionItem(
-                  context,
-                  AppLocalizations.of(context)!.newConversation,
-                  () {
-                    _showCreateConversationBottomSheet(context);
-                  },
-                  icon: Icons.add_box,
+                SafeArea(
+                  child: _buildOptionItem(
+                    context,
+                    AppLocalizations.of(context)!.newConversation,
+                    () {
+                      _showCreateConversationBottomSheet(context);
+                    },
+                    icon: Icons.add_box,
+                  ),
                 ),
               ],
             )
@@ -138,35 +142,35 @@ class _HomePageState extends ConsumerState<HomePage> {
     showModalBottomSheet(
       context: context,
       builder: (context) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(
-              height: 20,
-            ),
-            _buildOptionItem(
-              context,
-              AppLocalizations.of(context)!.createByAsk,
-              () {
-                Navigator.of(context).pop();
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(
+                height: 20,
+              ),
+              _buildOptionItem(
+                context,
+                AppLocalizations.of(context)!.createByAsk,
+                () {
+                  Navigator.of(context).pop();
 
-                TextEditingController controller = TextEditingController();
-
-                _showCreateConversationByAskDialog(context, controller);
-              },
-              icon: Icons.add_box,
-            ),
-            _buildDivider(),
-            _buildOptionItem(
-              context,
-              AppLocalizations.of(context)!.createByPrompt,
-              () {
-                Navigator.of(context).pop();
-                _showCreateConversationByPromptDialog();
-              },
-              icon: Icons.add_box,
-            ),
-          ],
+                  _showCreateConversationByAskDialog(context);
+                },
+                icon: Icons.add_box,
+              ),
+              _buildDivider(),
+              _buildOptionItem(
+                context,
+                AppLocalizations.of(context)!.createByPrompt,
+                () {
+                  Navigator.of(context).pop();
+                  _showCreateConversationByPromptDialog();
+                },
+                icon: Icons.add_box,
+              ),
+            ],
+          ),
         );
       },
     );
@@ -247,8 +251,9 @@ class _HomePageState extends ConsumerState<HomePage> {
         });
   }
 
-  void _showCreateConversationByAskDialog(
-      BuildContext context, TextEditingController controller) {
+  void _showCreateConversationByAskDialog(BuildContext context) {
+    TextEditingController controller = TextEditingController();
+
     showDialog(
       context: context,
       builder: (context) {

@@ -7,11 +7,14 @@ import 'package:flutter_chatgpt/providers/selected_conversation.dart';
 import 'package:flutter_chatgpt/repository/conversation/conversation_info.dart';
 import 'package:flutter_chatgpt/repository/conversation/conversation_repository.dart';
 import 'package:flutter_chatgpt/repository/msg/msg_info.dart';
+import 'package:flutter_chatgpt/utils/log_util.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ChatListView extends ConsumerStatefulWidget {
-  const ChatListView({super.key});
+  const ChatListView({super.key, this.scrollController});
+
+  final ScrollController? scrollController;
 
   @override
   ConsumerState<ChatListView> createState() => _ChatListViewState();
@@ -19,7 +22,18 @@ class ChatListView extends ConsumerStatefulWidget {
 
 class _ChatListViewState extends ConsumerState<ChatListView> {
   final _controller = TextEditingController();
-  final _scrollController = ScrollController();
+  final _focusNode = FocusNode();
+
+  late ScrollController _scrollController;
+
+  double _scrollStartPixel = 0.0;
+
+  @override
+  void initState() {
+    _scrollController = widget.scrollController ?? ScrollController();
+
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,65 +63,93 @@ class _ChatListViewState extends ConsumerState<ChatListView> {
               ? _buildEmptyView()
               : Scrollbar(
                   controller: _scrollController,
-                  thumbVisibility: true,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    controller: _scrollController,
-                    itemCount: msgList.length,
-                    itemBuilder: (context, index) {
-                      MsgInfo msgInfo = msgList[index];
-
-                      return ChatView(
-                        msgInfo,
-                        index == msgList.length - 1 &&
-                            msgInfo.finishReason == 'length',
-                      );
+                  child: NotificationListener(
+                    onNotification: (notification) {
+                      if (notification is ScrollStartNotification) {
+                        if (notification.depth == 0) {
+                          _scrollStartPixel = notification.metrics.pixels;
+                        }
+                      } else if (notification is ScrollUpdateNotification) {
+                        if ((notification.metrics.pixels - _scrollStartPixel)
+                                .abs() >
+                            0.1 * notification.metrics.viewportDimension) {
+                          _focusNode.unfocus();
+                        }
+                      }
+                      return false;
                     },
+                    child: ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      controller: _scrollController,
+                      itemCount: msgList.length,
+                      itemBuilder: (context, index) {
+                        MsgInfo msgInfo = msgList[index];
+
+                        return ChatView(
+                          msgInfo,
+                          index == msgList.length - 1 &&
+                              msgInfo.finishReason == 'length',
+                        );
+                      },
+                    ),
                   ),
                 ),
         ),
-        Container(
-          constraints: const BoxConstraints(maxHeight: 100),
-          padding: const EdgeInsets.all(16),
-          child: RawKeyboardListener(
-            focusNode: FocusNode(),
-            onKey: _handleKeyEvent,
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    decoration: InputDecoration(
-                      labelText: AppLocalizations.of(context)!.inputQuestion,
-                      hintText: AppLocalizations.of(context)!.inputQuestionTips,
-                      floatingLabelBehavior: FloatingLabelBehavior.auto,
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
+        SafeArea(
+          child: Container(
+            constraints: const BoxConstraints(maxHeight: 100),
+            decoration: BoxDecoration(
+              border: Border.symmetric(
+                horizontal: BorderSide(
+                  color: Colors.grey.shade300,
+                  width: .3,
+                ),
+              ),
+            ),
+            padding: const EdgeInsets.all(16),
+            child: RawKeyboardListener(
+              focusNode: FocusNode(),
+              onKey: _handleKeyEvent,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      focusNode: _focusNode,
+                      controller: _controller,
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)!.inputQuestion,
+                        hintText:
+                            AppLocalizations.of(context)!.inputQuestionTips,
+                        floatingLabelBehavior: FloatingLabelBehavior.auto,
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
                       ),
-                      filled: true,
+                      maxLines: null,
                     ),
-                    maxLines: null,
                   ),
-                ),
-                const SizedBox(width: 16),
-                SizedBox(
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      _sendMessage();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(8))),
-                      padding: EdgeInsets.zero,
+                  const SizedBox(width: 16),
+                  SizedBox(
+                    height: 48,
+                    width: 48,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        _sendMessage();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(8))),
+                        padding: EdgeInsets.zero,
+                      ),
+                      child: const Icon(Icons.send),
                     ),
-                    child: const Icon(Icons.send),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -244,9 +286,17 @@ var sceneList = [
       '''
   },
   {
-    "title": "Prompt 编写导师",
+    "title": "小红书内容",
     "color": Colors.orange[300],
-    "description": "需要你扮演Prompt 编写导师，我写一段话，你帮我写Prompt"
+    "description": '''
+    一篇小红书笔记主要包括4个部分：
+    开头：痛点引入+情景描述+人设+方法介绍+点赞诱导
+    中间：讲知识点，范围控制在1~5个，如果是5个重点讲其中的两个，如果是3个重点讲其中1个，有重点，效果会更好。
+    结尾：提高关注率
+    说明： 我是写的内容常常是一个系列来的，欢迎大家点击主页查看更多精彩内容（目的引导用户看下一篇，想看更多去主页）
+    最后：给笔记打上热门标签
+    请以上述规则为基础，作为一位小红书博主以我给出的主题写一篇小红书笔记，全部规则都要用上
+  '''
   },
   {
     "title": "小程序开发",
