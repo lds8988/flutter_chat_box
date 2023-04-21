@@ -1,7 +1,7 @@
 import 'package:any_syntax_highlighter/any_syntax_highlighter.dart';
 import 'package:any_syntax_highlighter/themes/any_syntax_highlighter_theme.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_markdown_selectionarea/flutter_markdown_selectionarea.dart';
 import 'package:markdown/markdown.dart' as md;
 
 class CodeHighLighter extends MarkdownElementBuilder {

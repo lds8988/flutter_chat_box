@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_chatgpt/components/chat/chat_list_view.dart';
-import 'package:flutter_chatgpt/components/conversation_list_view.dart';
-import 'package:flutter_chatgpt/configs/config.dart';
-import 'package:flutter_chatgpt/configs/config_info.dart';
-import 'package:flutter_chatgpt/device/form_factor.dart';
-import 'package:flutter_chatgpt/providers/conversation_list.dart';
-import 'package:flutter_chatgpt/providers/selected_conversation.dart';
-import 'package:flutter_chatgpt/repository/conversation/conversation_info.dart';
-import 'package:flutter_chatgpt/repository/conversation/conversation_repository.dart';
-import 'package:flutter_chatgpt/route/route_util.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:tony_chat_box/components/chat/chat_list_view.dart';
+import 'package:tony_chat_box/components/conversation_list_view.dart';
+import 'package:tony_chat_box/configs/config.dart';
+import 'package:tony_chat_box/configs/config_info.dart';
+import 'package:tony_chat_box/device/form_factor.dart';
+import 'package:tony_chat_box/providers/conversation_list.dart';
+import 'package:tony_chat_box/providers/selected_conversation.dart';
+import 'package:tony_chat_box/repository/conversation/conversation_info.dart';
+import 'package:tony_chat_box/repository/conversation/conversation_repository.dart';
+import 'package:tony_chat_box/route/route_util.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -602,43 +602,25 @@ class _HomePageState extends ConsumerState<HomePage> {
                       const SizedBox(
                         height: 28,
                       ),
-                      TextField(
-                        focusNode: ipFocusNode,
-                        controller: controllerIp,
-                        decoration: InputDecoration(
-                          labelText: AppLocalizations.of(context)!.setIp,
-                          hintText: AppLocalizations.of(context)!.setIpTip,
-                          floatingLabelBehavior: FloatingLabelBehavior.auto,
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(5),
-                            borderSide: BorderSide.none,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(AppLocalizations.of(context)!.isUseProxy),
+                          Switch(
+                            value: configInfo.userProxy,
+                            onChanged: (value) {
+                              config.switchProxyMode();
+                            },
                           ),
-                          filled: true,
+                        ],
+                      ),
+                      if (configInfo.userProxy)
+                        ...buildProxyInputGroup(
+                          ipFocusNode,
+                          portFocusNode,
+                          controllerIp,
+                          controllerPort,
                         ),
-                        maxLines: null,
-                      ),
-                      const SizedBox(
-                        height: 28,
-                      ),
-                      TextField(
-                        focusNode: portFocusNode,
-                        controller: controllerPort,
-                        decoration: InputDecoration(
-                          labelText: AppLocalizations.of(context)!.setPort,
-                          hintText: AppLocalizations.of(context)!.setPortTip,
-                          floatingLabelBehavior: FloatingLabelBehavior.auto,
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(5),
-                            borderSide: BorderSide.none,
-                          ),
-                          filled: true,
-                        ),
-                        maxLines: null,
-                      ),
                     ],
                   ),
                 );
@@ -656,5 +638,55 @@ class _HomePageState extends ConsumerState<HomePage> {
         });
       },
     );
+  }
+
+  List<Widget> buildProxyInputGroup(
+    FocusNode ipFocusNode,
+    FocusNode portFocusNode,
+    TextEditingController controllerIp,
+    TextEditingController controllerPort,
+  ) {
+    return [
+      const SizedBox(
+        height: 28,
+      ),
+      TextField(
+        focusNode: ipFocusNode,
+        controller: controllerIp,
+        decoration: InputDecoration(
+          labelText: AppLocalizations.of(context)!.setIp,
+          hintText: AppLocalizations.of(context)!.setIpTip,
+          floatingLabelBehavior: FloatingLabelBehavior.auto,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(5),
+            borderSide: BorderSide.none,
+          ),
+          filled: true,
+        ),
+        maxLines: null,
+      ),
+      const SizedBox(
+        height: 28,
+      ),
+      TextField(
+        focusNode: portFocusNode,
+        controller: controllerPort,
+        decoration: InputDecoration(
+          labelText: AppLocalizations.of(context)!.setPort,
+          hintText: AppLocalizations.of(context)!.setPortTip,
+          floatingLabelBehavior: FloatingLabelBehavior.auto,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(5),
+            borderSide: BorderSide.none,
+          ),
+          filled: true,
+        ),
+        maxLines: null,
+      ),
+    ];
   }
 }

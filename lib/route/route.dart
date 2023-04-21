@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
-import 'package:flutter_chatgpt/pages/home.dart';
-import 'package:flutter_chatgpt/pages/chat.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:go_router/go_router.dart';
+import 'package:tony_chat_box/pages/chat.dart';
+import 'package:tony_chat_box/pages/home.dart';
 
 class Routes {
   static const String home = '/';

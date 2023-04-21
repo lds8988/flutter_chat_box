@@ -3,14 +3,14 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_chatgpt/configs/config_info.dart';
-import 'package:flutter_chatgpt/repository/conversation/conversation_repository.dart';
-import 'package:flutter_chatgpt/repository/msg/msg_info.dart';
-import 'package:flutter_chatgpt/utils/log_util.dart';
-import 'package:flutter_chatgpt/utils/sharded_preference/sp_keys.dart';
-import 'package:flutter_chatgpt/utils/sharded_preference/sp_util.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:tiktoken/tiktoken.dart';
+import 'package:tony_chat_box/configs/config_info.dart';
+import 'package:tony_chat_box/repository/conversation/conversation_repository.dart';
+import 'package:tony_chat_box/repository/msg/msg_info.dart';
+import 'package:tony_chat_box/utils/log_util.dart';
+import 'package:tony_chat_box/utils/sharded_preference/sp_keys.dart';
+import 'package:tony_chat_box/utils/sharded_preference/sp_util.dart';
 
 class MessageRepository {
   static final MessageRepository _instance = MessageRepository._internal();
@@ -123,7 +123,7 @@ class MessageRepository {
       'Content-Type': 'application/json',
     };
 
-    if (configInfo.ip.isNotEmpty && configInfo.port.isNotEmpty) {
+    if (configInfo.userProxy) {
       _dio.httpClientAdapter =
           IOHttpClientAdapter(onHttpClientCreate: (client) {
         client.findProxy = (uri) {

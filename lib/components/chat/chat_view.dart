@@ -1,12 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_chatgpt/components/chat/markdown/markdown.dart';
-import 'package:flutter_chatgpt/providers/msg_list.dart';
-import 'package:flutter_chatgpt/repository/msg/msg_info.dart';
-import 'package:flutter_chatgpt/utils/log_util.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tony_chat_box/components/chat/markdown/markdown.dart';
+import 'package:tony_chat_box/providers/msg_list.dart';
+import 'package:tony_chat_box/repository/msg/msg_info.dart';
 
 class ChatView extends ConsumerStatefulWidget {
   const ChatView(

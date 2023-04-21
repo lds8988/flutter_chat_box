@@ -1,4 +1,4 @@
-name: flutter_chatgpt
+name: tony_chat_box
 description: flutter写的GPT聊天工具，支持打包到移动端，桌面端。
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -42,7 +42,7 @@ dependencies:
   font_awesome_flutter: ^10.4.0
   sqflite: ^2.2.6
   uuid: ^3.0.7
-  flutter_markdown: ^0.6.14
+  flutter_markdown_selectionarea: ^0.6.14+3
   any_syntax_highlighter: ^0.0.13
   package_info_plus: ^3.0.3
   flutter_riverpod: ^2.3.1

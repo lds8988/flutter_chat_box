@@ -26,6 +26,7 @@ mixin _$ConfigInfo {
   String get baseUrl => throw _privateConstructorUsedError;
   bool get useStream => throw _privateConstructorUsedError;
   String get gptModel => throw _privateConstructorUsedError;
+  bool get userProxy => throw _privateConstructorUsedError;
   String get ip => throw _privateConstructorUsedError;
   String get port => throw _privateConstructorUsedError;
 
@@ -48,6 +49,7 @@ abstract class $ConfigInfoCopyWith<$Res> {
       String baseUrl,
       bool useStream,
       String gptModel,
+      bool userProxy,
       String ip,
       String port});
 }
@@ -71,6 +73,7 @@ class _$ConfigInfoCopyWithImpl<$Res, $Val extends ConfigInfo>
     Object? baseUrl = null,
     Object? useStream = null,
     Object? gptModel = null,
+    Object? userProxy = null,
     Object? ip = null,
     Object? port = null,
   }) {
@@ -99,6 +102,10 @@ class _$ConfigInfoCopyWithImpl<$Res, $Val extends ConfigInfo>
           ? _value.gptModel
           : gptModel // ignore: cast_nullable_to_non_nullable
               as String,
+      userProxy: null == userProxy
+          ? _value.userProxy
+          : userProxy // ignore: cast_nullable_to_non_nullable
+              as bool,
       ip: null == ip
           ? _value.ip
           : ip // ignore: cast_nullable_to_non_nullable
@@ -126,6 +133,7 @@ abstract class _$$_ConfigInfoCopyWith<$Res>
       String baseUrl,
       bool useStream,
       String gptModel,
+      bool userProxy,
       String ip,
       String port});
 }
@@ -147,6 +155,7 @@ class __$$_ConfigInfoCopyWithImpl<$Res>
     Object? baseUrl = null,
     Object? useStream = null,
     Object? gptModel = null,
+    Object? userProxy = null,
     Object? ip = null,
     Object? port = null,
   }) {
@@ -175,6 +184,10 @@ class __$$_ConfigInfoCopyWithImpl<$Res>
           ? _value.gptModel
           : gptModel // ignore: cast_nullable_to_non_nullable
               as String,
+      userProxy: null == userProxy
+          ? _value.userProxy
+          : userProxy // ignore: cast_nullable_to_non_nullable
+              as bool,
       ip: null == ip
           ? _value.ip
           : ip // ignore: cast_nullable_to_non_nullable
@@ -192,11 +205,12 @@ class __$$_ConfigInfoCopyWithImpl<$Res>
 class _$_ConfigInfo extends _ConfigInfo {
   const _$_ConfigInfo(
       {this.isDark = false,
-      this.localeStr = "en",
+      this.localeStr = "zh",
       this.key = "",
       this.baseUrl = "https://api.openai.com",
       this.useStream = false,
       this.gptModel = "gpt-3.5-turbo",
+      this.userProxy = false,
       this.ip = "",
       this.port = ""})
       : super._();
@@ -224,6 +238,9 @@ class _$_ConfigInfo extends _ConfigInfo {
   final String gptModel;
   @override
   @JsonKey()
+  final bool userProxy;
+  @override
+  @JsonKey()
   final String ip;
   @override
   @JsonKey()
@@ -231,7 +248,7 @@ class _$_ConfigInfo extends _ConfigInfo {
 
   @override
   String toString() {
-    return 'ConfigInfo(isDark: $isDark, localeStr: $localeStr, key: $key, baseUrl: $baseUrl, useStream: $useStream, gptModel: $gptModel, ip: $ip, port: $port)';
+    return 'ConfigInfo(isDark: $isDark, localeStr: $localeStr, key: $key, baseUrl: $baseUrl, useStream: $useStream, gptModel: $gptModel, userProxy: $userProxy, ip: $ip, port: $port)';
   }
 
   @override
@@ -248,6 +265,8 @@ class _$_ConfigInfo extends _ConfigInfo {
                 other.useStream == useStream) &&
             (identical(other.gptModel, gptModel) ||
                 other.gptModel == gptModel) &&
+            (identical(other.userProxy, userProxy) ||
+                other.userProxy == userProxy) &&
             (identical(other.ip, ip) || other.ip == ip) &&
             (identical(other.port, port) || other.port == port));
   }
@@ -255,7 +274,7 @@ class _$_ConfigInfo extends _ConfigInfo {
   @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(runtimeType, isDark, localeStr, key, baseUrl,
-      useStream, gptModel, ip, port);
+      useStream, gptModel, userProxy, ip, port);
 
   @JsonKey(ignore: true)
   @override
@@ -279,6 +298,7 @@ abstract class _ConfigInfo extends ConfigInfo {
       final String baseUrl,
       final bool useStream,
       final String gptModel,
+      final bool userProxy,
       final String ip,
       final String port}) = _$_ConfigInfo;
   const _ConfigInfo._() : super._();
@@ -298,6 +318,8 @@ abstract class _ConfigInfo extends ConfigInfo {
   bool get useStream;
   @override
   String get gptModel;
+  @override
+  bool get userProxy;
   @override
   String get ip;
   @override

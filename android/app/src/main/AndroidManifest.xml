@@ -1,10 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.flutter_chatgpt">
+    package="com.tony.chat_box">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
    <application
-        android:label="flutter_chatgpt"
+        android:label="Tony Chat Box"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

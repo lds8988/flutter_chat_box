@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_chatgpt/providers/conversation_list.dart';
-import 'package:flutter_chatgpt/providers/selected_conversation.dart';
-import 'package:flutter_chatgpt/device/form_factor.dart';
-import 'package:flutter_chatgpt/repository/conversation/conversation_info.dart';
-import 'package:flutter_chatgpt/route/route.dart';
-import 'package:flutter_chatgpt/route/route_util.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+import 'package:tony_chat_box/device/form_factor.dart';
+import 'package:tony_chat_box/providers/conversation_list.dart';
+import 'package:tony_chat_box/providers/selected_conversation.dart';
+import 'package:tony_chat_box/repository/conversation/conversation_info.dart';
+import 'package:tony_chat_box/route/route_util.dart';
 
 class ConversationListView extends ConsumerStatefulWidget {
   const ConversationListView(this.emptyTip, {super.key});
@@ -58,6 +57,7 @@ class _ConversationListViewState extends ConsumerState<ConversationListView> {
                       conversationList[index], details.globalPosition);
                 },
                 onLongPressStart: (details) {
+                  HapticFeedback.vibrate();
                   _showConversationDetail(
                       conversationList[index], details.globalPosition);
                 },

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_chatgpt/route/route.dart';
 import 'package:go_router/go_router.dart';
+import 'package:tony_chat_box/route/route.dart';
 
 class RouteUtil {
   static jumpToChatPage(

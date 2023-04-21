@@ -4,13 +4,13 @@
   "secondPage": "this is the second Page",
   "countTimes": "current total count is:",
   "noConversationTips": "It seems like there is no conversation. Click the square on the right to quickly create one, or simply send a question to create one.",
-  "noConversationTipsPhone": "It seems there is no conversation. Click the button below to quickly create one.",
+  "noConversationTipsPhone": "It seems there is no conversation. \nClick the button below to quickly create one.",
   "newConversation": "New Conversation",
   "renameConversation": "Rename Conversation",
   "enterNewConversationNameTip": "please enter the new conversation name",
   "settings": "Settings",
-  "theme": "switch theme",
-  "language": "switch language",
+  "theme": "is use dark mode",
+  "language": "is switch to Chinese",
   "delete": "Delete",
   "rename": "Rename",
   "inputQuestion": "Input your question",
@@ -34,5 +34,6 @@
   "setIpTip": "input IP address here please",
   "setPort": "input port number",
   "setPortTip": "input port number here please",
-  "continueConversation": "continue"
+  "continueConversation": "continue",
+  "isUseProxy": "is use proxy"
 }

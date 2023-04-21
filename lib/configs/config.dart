@@ -1,7 +1,7 @@
-import 'package:flutter_chatgpt/configs/config_info.dart';
-import 'package:flutter_chatgpt/utils/sharded_preference/sp_keys.dart';
-import 'package:flutter_chatgpt/utils/sharded_preference/sp_util.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:tony_chat_box/configs/config_info.dart';
+import 'package:tony_chat_box/utils/sharded_preference/sp_keys.dart';
+import 'package:tony_chat_box/utils/sharded_preference/sp_util.dart';
 
 part 'config.g.dart';
 
@@ -18,6 +18,11 @@ class Config extends _$Config {
 
   void switchTheme() {
     state = state.copyWith(isDark: !state.isDark);
+    _saveToSp();
+  }
+
+  void switchProxyMode() {
+    state = state.copyWith(userProxy: !state.userProxy);
     _saveToSp();
   }
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_chatgpt/components/chat/markdown/code_hightlighter.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_markdown_selectionarea/flutter_markdown_selectionarea.dart';
+import 'package:tony_chat_box/components/chat/markdown/code_hightlighter.dart';
 
 class Markdown extends StatelessWidget {
   final String text;
@@ -9,12 +9,13 @@ class Markdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MarkdownBody(
-      data: text,
-      selectable: true,
-      builders: {
-        'code': CodeHighLighter(context),
-      },
+    return SelectionArea(
+      child: MarkdownBody(
+        data: text,
+        builders: {
+          'code': CodeHighLighter(context),
+        },
+      ),
     );
   }
 }

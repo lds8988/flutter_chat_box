@@ -1,7 +1,7 @@
-import 'package:flutter_chatgpt/providers/selected_conversation.dart';
-import 'package:flutter_chatgpt/repository/conversation/conversation_repository.dart';
-import 'package:flutter_chatgpt/repository/conversation/conversation_info.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:tony_chat_box/providers/selected_conversation.dart';
+import 'package:tony_chat_box/repository/conversation/conversation_info.dart';
+import 'package:tony_chat_box/repository/conversation/conversation_repository.dart';
 import 'package:uuid/uuid.dart';
 
 part 'conversation_list.g.dart';

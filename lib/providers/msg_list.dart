@@ -1,11 +1,10 @@
 import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter_chatgpt/repository/conversation/conversation_repository.dart';
-import 'package:flutter_chatgpt/repository/msg/message_repository.dart';
-import 'package:flutter_chatgpt/repository/msg/msg_info.dart';
-import 'package:flutter_chatgpt/utils/log_util.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tony_chat_box/repository/conversation/conversation_repository.dart';
+import 'package:tony_chat_box/repository/msg/message_repository.dart';
+import 'package:tony_chat_box/repository/msg/msg_info.dart';
 
 part 'msg_list.g.dart';
 
