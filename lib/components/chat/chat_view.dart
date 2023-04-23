@@ -3,9 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:tony_chat_box/components/chat/markdown/markdown.dart';
+import 'package:markdown_widget/markdown_widget.dart';
+import 'package:tony_chat_box/configs/config.dart';
+import 'package:tony_chat_box/configs/config_info.dart';
 import 'package:tony_chat_box/providers/msg_list.dart';
 import 'package:tony_chat_box/repository/msg/msg_info.dart';
+
+import 'code_wrapper.dart';
 
 class ChatView extends ConsumerStatefulWidget {
   const ChatView(
@@ -96,8 +100,26 @@ class _ChatViewState extends ConsumerState<ChatView> {
   }
 
   Widget buildReplyContent() {
-    Widget replyContent = Markdown(
-      text: widget.msgInfo.text,
+    // Widget replyContent = Markdown(
+    //   text: widget.msgInfo.text,
+    // );
+
+    ConfigInfo configInfo = ref.read(configProvider);
+
+    final config = configInfo.isDark
+        ? MarkdownConfig.darkConfig
+        : MarkdownConfig.defaultConfig;
+    codeWrapper(child, text) => CodeWrapperWidget(child: child, text: text);
+
+    Widget replyContent = MarkdownWidget(
+      data: widget.msgInfo.text,
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      config: config.copy(configs: [
+        configInfo.isDark
+            ? PreConfig.darkConfig.copy(wrapper: codeWrapper)
+            : const PreConfig().copy(wrapper: codeWrapper)
+      ]),
     );
 
     if (widget.showContinueBtn) {

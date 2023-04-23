@@ -268,6 +268,11 @@ var sceneList = [
     "description": "需要你扮演技术精湛的后端开发工程师，解决后端问题"
   },
   {
+    "title": "Flutter 开发",
+    "color": Colors.lightGreen,
+    "description": "需要你扮演技术精湛的 Flutter 开发工程师，解决 Flutter 开发相关的问题"
+  },
+  {
     "title": "小红书标题",
     "color": Colors.purple[300],
     "description": '''
