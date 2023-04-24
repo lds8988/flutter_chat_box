@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tony_chat_box/components/chat/chat_list_view.dart';
+import 'package:tony_chat_box/database/msg/msg_info.dart';
 import 'package:tony_chat_box/providers/conversation_list.dart';
 import 'package:tony_chat_box/providers/msg_list.dart';
 import 'package:tony_chat_box/providers/selected_conversation.dart';
-import 'package:tony_chat_box/repository/msg/msg_info.dart';
 
 class ChatPage extends ConsumerStatefulWidget {
   const ChatPage({

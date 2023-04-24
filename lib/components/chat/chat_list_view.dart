@@ -3,11 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tony_chat_box/components/chat/chat_view.dart';
+import 'package:tony_chat_box/database/msg/message_db_provider.dart';
+import 'package:tony_chat_box/database/msg/msg_info.dart';
 import 'package:tony_chat_box/providers/conversation_list.dart';
 import 'package:tony_chat_box/providers/msg_list.dart';
 import 'package:tony_chat_box/providers/selected_conversation.dart';
-import 'package:tony_chat_box/repository/conversation/conversation_repository.dart';
-import 'package:tony_chat_box/repository/msg/msg_info.dart';
 
 class ChatListView extends ConsumerStatefulWidget {
   const ChatListView({super.key, this.scrollController});
@@ -213,7 +213,7 @@ class _ChatListViewState extends ConsumerState<ChatListView> {
                 .read(conversationListProvider.notifier)
                 .createConversation(sceneList[index]["title"] as String);
 
-            ConversationRepository.getInstance().addSystemMessage(
+            MessageDbProvider().addSystemMessage(
               conversationInfo.uuid,
               sceneList[index]["description"] as String,
             );

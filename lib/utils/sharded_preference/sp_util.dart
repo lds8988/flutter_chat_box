@@ -7,17 +7,10 @@ class SPUtil{
   static SPUtil? _instance;
   factory SPUtil.getInstance() => _instance ??= SPUtil._initial();
   SharedPreferences? _preferences;
-  //创建命名构造函数
-  SPUtil._initial() {
-    //为什么在这里需要新写init方法 主要是在命名构造中不能使用async/await
-    init();
-  }
-  //初始化SharedPreferences
-  void init() async {
-    _preferences ??= await SharedPreferences.getInstance();
-  }
 
-  //到这里还没有完 有时候会遇到使用时提示 SharedPreferences 未初始化,所以还需要提供一个static 的方法
+  //创建命名构造函数
+  SPUtil._initial();
+
   static Future<SPUtil?> perInit() async {
     if (_instance == null) {
       //静态方法不能访问非静态变量所以需要创建变量再通过方法赋值回去
@@ -26,6 +19,8 @@ class SPUtil{
     }
     return _instance;
   }
+
+
   SPUtil._pre(SharedPreferences prefs) {
     _preferences = prefs;
   }

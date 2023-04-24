@@ -6,11 +6,11 @@ import 'package:tony_chat_box/components/chat/chat_list_view.dart';
 import 'package:tony_chat_box/components/conversation_list_view.dart';
 import 'package:tony_chat_box/configs/config.dart';
 import 'package:tony_chat_box/configs/config_info.dart';
+import 'package:tony_chat_box/database/conversation/conversation_info.dart';
+import 'package:tony_chat_box/database/msg/message_db_provider.dart';
 import 'package:tony_chat_box/device/form_factor.dart';
 import 'package:tony_chat_box/providers/conversation_list.dart';
 import 'package:tony_chat_box/providers/selected_conversation.dart';
-import 'package:tony_chat_box/repository/conversation/conversation_info.dart';
-import 'package:tony_chat_box/repository/conversation/conversation_repository.dart';
 import 'package:tony_chat_box/route/route_util.dart';
 
 class HomePage extends ConsumerStatefulWidget {
@@ -195,7 +195,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                           .createConversation(
                               sceneList[index]["title"] as String)
                           .then((conversationInfo) {
-                        ConversationRepository.getInstance().addSystemMessage(
+                        MessageDbProvider().addSystemMessage(
                           conversationInfo.uuid,
                           sceneList[index]["description"] as String,
                         );

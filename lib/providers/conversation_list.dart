@@ -1,7 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:tony_chat_box/database/conversation/conversation_info.dart';
+import 'package:tony_chat_box/database/conversation/conversation_db_provider.dart';
 import 'package:tony_chat_box/providers/selected_conversation.dart';
-import 'package:tony_chat_box/repository/conversation/conversation_info.dart';
-import 'package:tony_chat_box/repository/conversation/conversation_repository.dart';
 import 'package:uuid/uuid.dart';
 
 part 'conversation_list.g.dart';
@@ -15,12 +15,12 @@ class ConversationList extends _$ConversationList {
 
   Future<void> initConversationList() async {
     var conversationList =
-        await ConversationRepository.getInstance().getConversations();
+        await ConversationDbProvider().getConversations();
     state = conversationList;
   }
 
   Future<void> add(ConversationInfo conversationInfo) async {
-    await ConversationRepository.getInstance()
+    await ConversationDbProvider()
         .addConversation(conversationInfo);
     state = [...state, conversationInfo];
   }
@@ -41,7 +41,7 @@ class ConversationList extends _$ConversationList {
   }
 
   Future<void> updateConversation(ConversationInfo conversationInfo) async {
-    await ConversationRepository.getInstance()
+    await ConversationDbProvider()
         .updateConversation(conversationInfo);
 
     state = [
@@ -61,7 +61,7 @@ class ConversationList extends _$ConversationList {
       ref.read(selectedConversationProvider.notifier).clear();
     }
 
-    await ConversationRepository.getInstance()
+    await ConversationDbProvider()
         .deleteConversation(conversationInfo.uuid);
     state = [
       for (final item in state)

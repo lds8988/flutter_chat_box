@@ -6,8 +6,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:markdown_widget/markdown_widget.dart';
 import 'package:tony_chat_box/configs/config.dart';
 import 'package:tony_chat_box/configs/config_info.dart';
+import 'package:tony_chat_box/database/msg/msg_info.dart';
 import 'package:tony_chat_box/providers/msg_list.dart';
-import 'package:tony_chat_box/repository/msg/msg_info.dart';
 
 import 'code_wrapper.dart';
 

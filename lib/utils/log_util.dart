@@ -1,7 +1,10 @@
 import 'package:logger/logger.dart';
 
 class LogUtil {
-  static final Logger logger = Logger(
+
+  LogUtil._internal();
+
+  static final Logger _logger = Logger(
     printer: PrettyPrinter(
       stackTraceBeginIndex: 2,
       methodCount: 3,
@@ -39,6 +42,6 @@ class LogUtil {
       ];
     }
 
-    logger.log(level, msg);
+    _logger.log(level, msg);
   }
 }
