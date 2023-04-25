@@ -28,7 +28,7 @@ class MessageDbProvider extends BaseDbProvider {
 
   Future<List<MsgInfo>> getMessagesByConversationUUid(
       String uuid, {
-        String order = "ASC",
+        String order = "DESC",
       }) async {
     final db = await getDataBase();
     // 根据conversation的uuid查询message，过滤掉stateInt为2并且roleInt为2的消息

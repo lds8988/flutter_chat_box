@@ -20,6 +20,7 @@ class _PreWrapperState extends State<CodeWrapperWidget> {
   void initState() {
     super.initState();
     _switchWidget = Icon(Icons.copy_rounded, key: UniqueKey());
+
   }
 
   @override

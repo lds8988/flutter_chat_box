@@ -36,18 +36,7 @@ class _ChatListViewState extends ConsumerState<ChatListView> {
   @override
   Widget build(BuildContext context) {
     ref.listen(selectedConversationProvider, (previous, next) {
-      final msg = ref.read(msgListProvider.notifier);
-      msg.initMsgList(next.uuid).then((value) {
-        if (value.isNotEmpty) {
-          _scrollToNewMessage();
-        }
-      });
-    });
-
-    ref.listen(msgListProvider, (previous, next) {
-      if (next.isNotEmpty) {
-        _scrollToNewMessage();
-      }
+      _scrollToNewMessage();
     });
 
     final msgList = ref.watch(msgListProvider);
@@ -77,6 +66,7 @@ class _ChatListViewState extends ConsumerState<ChatListView> {
                       return false;
                     },
                     child: ListView.builder(
+                      reverse: true,
                       padding: const EdgeInsets.all(16),
                       controller: _scrollController,
                       itemCount: msgList.length,
@@ -195,7 +185,7 @@ class _ChatListViewState extends ConsumerState<ChatListView> {
       Future.delayed(
         const Duration(milliseconds: 500),
         () => _scrollController
-            .jumpTo(_scrollController.position.maxScrollExtent),
+            .jumpTo(0),
       );
     }
   }
