@@ -26,7 +26,7 @@
   "version": "版本",
   "notSelectConversationTip": "请先选择一个会话",
   "createByAsk": "通过提问创建会话",
-  "createByPrompt": "通过 prompt 创建会话",
+  "createByPrompt": "选择智能助手创建会话",
   "roleUser": "用户",
   "roleAssistant": "智能助手",
   "sendMsgErrTip": "发送消息失败，请重试！",

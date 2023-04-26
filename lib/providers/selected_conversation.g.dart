@@ -7,7 +7,7 @@ part of 'selected_conversation.dart';
 // **************************************************************************
 
 String _$selectedConversationHash() =>
-    r'25364450695523b528b63fcea9ca3c838f0eee19';
+    r'a0404b8c4c546241bcf430663a1d8a348ee6de83';
 
 /// See also [SelectedConversation].
 @ProviderFor(SelectedConversation)

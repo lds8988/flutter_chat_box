@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:markdown_widget/markdown_widget.dart';
 import 'package:tony_chat_box/configs/config.dart';
 import 'package:tony_chat_box/configs/config_info.dart';
@@ -26,26 +26,20 @@ class ChatView extends ConsumerStatefulWidget {
 }
 
 class _ChatViewState extends ConsumerState<ChatView> {
-  late bool _isUser;
-
-  @override
-  void initState() {
-    _isUser = widget.msgInfo.role == Role.user;
-
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
+    var isUser = widget.msgInfo.role == Role.user;
+
     return Column(
       crossAxisAlignment:
-          _isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment:
-              _isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+              isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
           children: [
-            if (_isUser && widget.msgInfo.state == MsgState.failed)
+            if (isUser && widget.msgInfo.state == MsgState.failed)
               GestureDetector(
                 onTap: () {
                   ref.read(msgListProvider.notifier).sendMessage(
@@ -62,14 +56,14 @@ class _ChatViewState extends ConsumerState<ChatView> {
                   ),
                 ),
               ),
-            FaIcon(_isUser ? FontAwesomeIcons.person : FontAwesomeIcons.robot),
+            FaIcon(isUser ? FontAwesomeIcons.person : FontAwesomeIcons.robot),
             const SizedBox(
               width: 5,
             ),
-            Text(_isUser
+            Text(isUser
                 ? AppLocalizations.of(context)!.roleUser
                 : AppLocalizations.of(context)!.roleAssistant),
-            if (!_isUser && widget.msgInfo.state == MsgState.sending)
+            if (!isUser && widget.msgInfo.state == MsgState.sending)
               const Padding(
                 padding: EdgeInsets.only(left: 8.0),
                 child: CupertinoActivityIndicator(
@@ -87,7 +81,7 @@ class _ChatViewState extends ConsumerState<ChatView> {
           child: Card(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
-              child: _isUser
+              child: isUser
                   ? SelectableText(
                       widget.msgInfo.text,
                     )
@@ -100,9 +94,6 @@ class _ChatViewState extends ConsumerState<ChatView> {
   }
 
   Widget buildReplyContent() {
-    // Widget replyContent = Markdown(
-    //   text: widget.msgInfo.text,
-    // );
 
     ConfigInfo configInfo = ref.read(configProvider);
 

@@ -1,6 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:tony_chat_box/database/conversation/conversation_info.dart';
 import 'package:tony_chat_box/database/conversation/conversation_db_provider.dart';
+import 'package:tony_chat_box/database/conversation/conversation_info.dart';
 import 'package:tony_chat_box/providers/selected_conversation.dart';
 import 'package:uuid/uuid.dart';
 

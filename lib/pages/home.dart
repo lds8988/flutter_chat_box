@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:tony_chat_box/components/chat/chat_list_view.dart';
 import 'package:tony_chat_box/components/conversation_list_view.dart';
 import 'package:tony_chat_box/configs/config.dart';
 import 'package:tony_chat_box/configs/config_info.dart';
+import 'package:tony_chat_box/database/assistant/assistant_db_provider.dart';
+import 'package:tony_chat_box/database/assistant/assistant_info.dart';
 import 'package:tony_chat_box/database/conversation/conversation_info.dart';
 import 'package:tony_chat_box/database/msg/message_db_provider.dart';
 import 'package:tony_chat_box/device/form_factor.dart';
@@ -27,6 +30,8 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   late bool _isPhoneSize;
 
+  late List<AssistantInfo> _assistantInfoList;
+
   @override
   void initState() {
     PackageInfo.fromPlatform().then((value) {
@@ -34,6 +39,10 @@ class _HomePageState extends ConsumerState<HomePage> {
         _packageInfo = value;
       });
     });
+
+    AssistantDbProvider()
+        .getAssistantList()
+        .then((value) => _assistantInfoList = value);
 
     super.initState();
   }
@@ -181,23 +190,27 @@ class _HomePageState extends ConsumerState<HomePage> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text(AppLocalizations.of(context)!.createByPrompt),
+            title: Text(
+              AppLocalizations.of(context)!.createByPrompt,
+              style: const TextStyle(
+                fontSize: 20,
+              ),
+            ),
             content: SizedBox(
               width: 448,
               height: 552,
-              child: ListView.builder(
-                itemCount: sceneList.length,
+              child: ListView.separated(
+                itemCount: _assistantInfoList.length,
                 itemBuilder: (BuildContext context, int index) {
                   return GestureDetector(
                     onTap: () {
                       ref
                           .read(conversationListProvider.notifier)
-                          .createConversation(
-                              sceneList[index]["title"] as String)
+                          .createConversation(_assistantInfoList[index].title)
                           .then((conversationInfo) {
-                        MessageDbProvider().addSystemMessage(
+                        MessageDbProvider().addSystemMessageByAssistantId(
                           conversationInfo.uuid,
-                          sceneList[index]["description"] as String,
+                          _assistantInfoList[index].id,
                         );
 
                         Navigator.of(context).pop();
@@ -208,34 +221,15 @@ class _HomePageState extends ConsumerState<HomePage> {
                         );
                       });
                     },
-                    child: Container(
-                      margin: const EdgeInsets.all(8),
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: sceneList[index]["color"] as Color,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            '${sceneList[index]["title"]}',
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            '${sceneList[index]["description"]}',
-                            style: const TextStyle(
-                              fontSize: 16,
-                            ),
-                          ),
-                        ],
-                      ),
+                    child: ListTile(
+                      title: Text(_assistantInfoList[index].title),
+                      subtitle: Text(_assistantInfoList[index].desc),
+                      trailing: const Icon(Icons.arrow_forward_ios_rounded),
                     ),
                   );
+                },
+                separatorBuilder: (BuildContext context, int index) {
+                  return const Divider();
                 },
               ),
             ),

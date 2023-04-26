@@ -14,12 +14,7 @@ class ConversationDbProvider extends BaseDbProvider {
     final List<Map<String, dynamic>> maps =
         await db.query(_tableConversationName);
     return List.generate(maps.length, (i) {
-      final uuid = maps[i][_columnUuid];
-      final name = maps[i][_columnName];
-      return ConversationInfo(
-        uuid: uuid,
-        name: name,
-      );
+      return ConversationInfo.fromJson(maps[i]);
     });
   }
 

@@ -26,7 +26,7 @@
   "version": "version",
   "notSelectConversationTip": "please select a conversation first",
   "createByAsk": "create by ask question",
-  "createByPrompt": "create by prompt",
+  "createByPrompt": "create by choose assistant",
   "roleUser": "user",
   "roleAssistant": "assistant",
   "sendMsgErrTip": "send message error, retry again please！",

@@ -6,7 +6,7 @@ part of 'msg_list.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$msgListHash() => r'f387eae78c87a5c153d8578cae1b9a7cd44f58ad';
+String _$msgListHash() => r'24337e8909a5bdab486bbbcae52a5f80d2c00aef';
 
 /// See also [MsgList].
 @ProviderFor(MsgList)

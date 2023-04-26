@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tony_chat_box/components/chat/chat_view.dart';
+import 'package:tony_chat_box/database/assistant/assistant_db_provider.dart';
+import 'package:tony_chat_box/database/assistant/assistant_info.dart';
 import 'package:tony_chat_box/database/msg/message_db_provider.dart';
 import 'package:tony_chat_box/database/msg/msg_info.dart';
 import 'package:tony_chat_box/providers/conversation_list.dart';
 import 'package:tony_chat_box/providers/msg_list.dart';
 import 'package:tony_chat_box/providers/selected_conversation.dart';
+import 'package:tony_chat_box/utils/log_util.dart';
 
 class ChatListView extends ConsumerStatefulWidget {
   const ChatListView({super.key, this.scrollController});
@@ -26,9 +29,17 @@ class _ChatListViewState extends ConsumerState<ChatListView> {
 
   double _scrollStartPixel = 0.0;
 
+  List<AssistantInfo> _assistantInfoList = [];
+
+  bool _isReverse = true;
+
   @override
   void initState() {
     _scrollController = widget.scrollController ?? ScrollController();
+
+    AssistantDbProvider()
+        .getAssistantList()
+        .then((value) => setState(() => _assistantInfoList = value));
 
     super.initState();
   }
@@ -39,7 +50,11 @@ class _ChatListViewState extends ConsumerState<ChatListView> {
       _scrollToNewMessage();
     });
 
-    final msgList = ref.watch(msgListProvider);
+    var msgList = ref.watch(msgListProvider);
+
+    if (_isReverse) {
+      msgList = msgList.reversed.toList();
+    }
 
     final selectedConversation = ref.watch(selectedConversationProvider);
 
@@ -52,6 +67,28 @@ class _ChatListViewState extends ConsumerState<ChatListView> {
                   controller: _scrollController,
                   child: NotificationListener(
                     onNotification: (notification) {
+                      if (notification is ScrollMetricsNotification &&
+                          notification.depth == 0) {
+
+                        var metrics = notification.metrics;
+
+                        if (metrics.maxScrollExtent == 0) {
+                          if (_isReverse) {
+                            LogUtil.d('is do------>yes');
+                            setState(() {
+                              _isReverse = false;
+                            });
+                          }
+                        } else {
+                          if (!_isReverse) {
+                            LogUtil.d('is do------>yes');
+                            setState(() {
+                              _isReverse = true;
+                            });
+                          }
+                        }
+                      }
+
                       if (notification is ScrollStartNotification) {
                         if (notification.depth == 0) {
                           _scrollStartPixel = notification.metrics.pixels;
@@ -66,7 +103,7 @@ class _ChatListViewState extends ConsumerState<ChatListView> {
                       return false;
                     },
                     child: ListView.builder(
-                      reverse: true,
+                      reverse: _isReverse,
                       padding: const EdgeInsets.all(16),
                       controller: _scrollController,
                       itemCount: msgList.length,
@@ -182,62 +219,61 @@ class _ChatListViewState extends ConsumerState<ChatListView> {
 
   void _scrollToNewMessage() {
     if (_scrollController.hasClients) {
-      Future.delayed(
-        const Duration(milliseconds: 500),
-        () => _scrollController
-            .jumpTo(0),
-      );
+      _scrollController
+          .animateTo(
+            0,
+            duration: const Duration(milliseconds: 100),
+            curve: Curves.ease,
+          );
     }
   }
 
   Widget _buildEmptyView() {
     return GridView.builder(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
+        crossAxisCount: 4,
       ),
-      itemCount: sceneList.length,
+      itemCount: _assistantInfoList.length,
       itemBuilder: (BuildContext context, int index) {
         return GestureDetector(
           onTap: () async {
             var conversationInfo = await ref
                 .read(conversationListProvider.notifier)
-                .createConversation(sceneList[index]["title"] as String);
+                .createConversation(_assistantInfoList[index].title);
 
-            MessageDbProvider().addSystemMessage(
+            MessageDbProvider().addSystemMessageByAssistantId(
               conversationInfo.uuid,
-              sceneList[index]["description"] as String,
+              _assistantInfoList[index].id,
             );
           },
-          child: Container(
+          child: Card(
             margin: const EdgeInsets.all(8),
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: sceneList[index]["color"] as Color,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                Text(
-                  '${sceneList[index]["title"]}',
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Expanded(
-                  child: Text(
-                    '${sceneList[index]["description"]}',
-                    maxLines: 10,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  Text(
+                    _assistantInfoList[index].title,
                     style: const TextStyle(
                       fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    _assistantInfoList[index].desc,
+                    maxLines: 10,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 12,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );
@@ -245,60 +281,3 @@ class _ChatListViewState extends ConsumerState<ChatListView> {
     );
   }
 }
-
-var sceneList = [
-  {
-    "title": "前端开发",
-    "color": Colors.blue[300],
-    "description": "需要你扮演技术精湛的前端开发工程师，解决前端问题"
-  },
-  {
-    "title": "后端开发",
-    "color": Colors.green[300],
-    "description": "需要你扮演技术精湛的后端开发工程师，解决后端问题"
-  },
-  {
-    "title": "Flutter 开发",
-    "color": Colors.lightGreen,
-    "description": "需要你扮演技术精湛的 Flutter 开发工程师，解决 Flutter 开发相关的问题"
-  },
-  {
-    "title": "小红书标题",
-    "color": Colors.purple[300],
-    "description": '''
-      💃 10S自测适合裙子or裤子 (结果)\n
-      ✂️ 旧衣改造穿出新花样 (事件)\n
-      👗 穿搭博主 vs 现实中穿搭 (对比)\n
-      🔢 4种体型女生穿搭技巧！ (解决方案)\n
-      🎨 最显白颜色穿搭 (结果)\n
-      🙋 当代女生买裙子难处 (细分人群+共鸣)\n
-      👠 双开门衣柜装鞋情况 (数字+结果)\n
-      👗 微胖穿搭建议 (细分人群+数字)\n
-      🧦 万能袜子搭配公式 (解决方案+结果)\n
-      请基于上述小红书标题和括号里的编写逻辑，针对用户输入生成10个新的小红书标题，标题中应当使用恰当的emoji表情
-      '''
-  },
-  {
-    "title": "小红书内容",
-    "color": Colors.orange[300],
-    "description": '''
-    一篇小红书笔记主要包括4个部分：
-    开头：痛点引入+情景描述+人设+方法介绍+点赞诱导
-    中间：讲知识点，范围控制在1~5个，如果是5个重点讲其中的两个，如果是3个重点讲其中1个，有重点，效果会更好。
-    结尾：提高关注率
-    说明： 我是写的内容常常是一个系列来的，欢迎大家点击主页查看更多精彩内容（目的引导用户看下一篇，想看更多去主页）
-    最后：给笔记打上热门标签
-    请以上述规则为基础，作为一位小红书博主以我给出的主题写一篇小红书笔记，全部规则都要用上
-  '''
-  },
-  {
-    "title": "小程序开发",
-    "color": Colors.red[300],
-    "description": "需要你扮演小程序开发工程师，解决小程序研发疑难杂症"
-  },
-  {
-    "title": "运维工程师",
-    "color": Colors.blueGrey[300],
-    "description": "需要你扮演运维工程师，需要维护系统的稳定性"
-  },
-];
