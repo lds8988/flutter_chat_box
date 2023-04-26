@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:tony_chat_box/components/chat/chat_view.dart';
 import 'package:tony_chat_box/database/assistant/assistant_db_provider.dart';
 import 'package:tony_chat_box/database/assistant/assistant_info.dart';
@@ -15,7 +16,7 @@ import 'package:tony_chat_box/utils/log_util.dart';
 class ChatListView extends ConsumerStatefulWidget {
   const ChatListView({super.key, this.scrollController});
 
-  final ScrollController? scrollController;
+  final AutoScrollController? scrollController;
 
   @override
   ConsumerState<ChatListView> createState() => _ChatListViewState();
@@ -25,7 +26,7 @@ class _ChatListViewState extends ConsumerState<ChatListView> {
   final _controller = TextEditingController();
   final _focusNode = FocusNode();
 
-  late ScrollController _scrollController;
+  late AutoScrollController _scrollController;
 
   double _scrollStartPixel = 0.0;
 
@@ -35,7 +36,7 @@ class _ChatListViewState extends ConsumerState<ChatListView> {
 
   @override
   void initState() {
-    _scrollController = widget.scrollController ?? ScrollController();
+    _scrollController = widget.scrollController ?? AutoScrollController();
 
     AssistantDbProvider()
         .getAssistantList()
@@ -69,7 +70,6 @@ class _ChatListViewState extends ConsumerState<ChatListView> {
                     onNotification: (notification) {
                       if (notification is ScrollMetricsNotification &&
                           notification.depth == 0) {
-
                         var metrics = notification.metrics;
 
                         if (metrics.maxScrollExtent == 0) {
@@ -110,10 +110,15 @@ class _ChatListViewState extends ConsumerState<ChatListView> {
                       itemBuilder: (context, index) {
                         MsgInfo msgInfo = msgList[index];
 
-                        return ChatView(
-                          msgInfo,
-                          index == msgList.length - 1 &&
-                              msgInfo.finishReason == 'length',
+                        return AutoScrollTag(
+                          key: ValueKey(index),
+                          controller: _scrollController,
+                          index: index,
+                          child: ChatView(
+                            msgInfo,
+                            index == msgList.length - 1 &&
+                                msgInfo.finishReason == 'length',
+                          ),
                         );
                       },
                     ),
@@ -204,7 +209,12 @@ class _ChatListViewState extends ConsumerState<ChatListView> {
         stateInt: MsgState.sending.index,
       );
 
-      await ref.read(msgListProvider.notifier).sendMessage(newMessage);
+
+      await ref.read(msgListProvider.notifier).sendMessage(
+            newMessage,
+            beforeSend: () => _scrollController.scrollToIndex(0),
+          );
+
       _scrollToNewMessage();
     }
   }
@@ -219,12 +229,12 @@ class _ChatListViewState extends ConsumerState<ChatListView> {
 
   void _scrollToNewMessage() {
     if (_scrollController.hasClients) {
-      _scrollController
-          .animateTo(
-            0,
-            duration: const Duration(milliseconds: 100),
-            curve: Curves.ease,
-          );
+      Future.delayed(const Duration(milliseconds: 100), () {
+        _scrollController.scrollToIndex(
+          1,
+          preferPosition: AutoScrollPosition.end,
+        );
+      });
     }
   }
 

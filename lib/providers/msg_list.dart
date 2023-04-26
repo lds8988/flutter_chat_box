@@ -35,7 +35,11 @@ class MsgList extends _$MsgList {
     return state;
   }
 
-  Future<void> sendMessage(MsgInfo userMsgInfo, {bool isRetry = false}) async {
+  Future<void> sendMessage(
+    MsgInfo userMsgInfo, {
+    bool isRetry = false,
+    VoidCallback? beforeSend,
+  }) async {
     if (!isRetry) {
       int id = await MessageDbProvider().addMessage(userMsgInfo);
       userMsgInfo = userMsgInfo.copyWith(id: id);
@@ -62,9 +66,13 @@ class MsgList extends _$MsgList {
 
     state = [...state, newMsgInfo];
 
+    if(beforeSend != null) {
+      beforeSend();
+    }
+
     var messageDbProvider = MessageDbProvider();
 
-    postMessage(
+    await postMessage(
       userMsgInfo.conversationId,
       onSuccess: (responseData) async {
         String message = responseData['choices'][0]['message']['content'];
@@ -76,8 +84,7 @@ class MsgList extends _$MsgList {
           finishReason: finishReason,
         );
 
-        int newMsgId =
-            await messageDbProvider.addMessage(newMsgInfo);
+        int newMsgId = await messageDbProvider.addMessage(newMsgInfo);
 
         userMsgInfo = userMsgInfo.copyWith(stateInt: MsgState.received.index);
         messageDbProvider.updateMessage(userMsgInfo);
@@ -164,9 +171,8 @@ class MsgList extends _$MsgList {
     return numTokens;
   }
 
-  void postMessage(
+  Future<void> postMessage(
     String conversationId, {
-    ValueChanged<String>? onResponse,
     ValueChanged<String>? onError,
     ValueChanged<Map<String, dynamic>>? onSuccess,
   }) async {

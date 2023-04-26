@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:tony_chat_box/components/chat/chat_list_view.dart';
 import 'package:tony_chat_box/database/msg/msg_info.dart';
 import 'package:tony_chat_box/providers/conversation_list.dart';
@@ -22,7 +23,7 @@ class ChatPage extends ConsumerStatefulWidget {
 
 class _ChatPageState extends ConsumerState<ChatPage>
     with WidgetsBindingObserver {
-  final ScrollController _scrollController = ScrollController();
+  final AutoScrollController _scrollController = AutoScrollController();
 
   @override
   void initState() {
