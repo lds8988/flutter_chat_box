@@ -14,14 +14,12 @@ class ConversationList extends _$ConversationList {
   }
 
   Future<void> initConversationList() async {
-    var conversationList =
-        await ConversationDbProvider().getConversations();
+    var conversationList = await ConversationDbProvider().getConversations();
     state = conversationList;
   }
 
   Future<void> add(ConversationInfo conversationInfo) async {
-    await ConversationDbProvider()
-        .addConversation(conversationInfo);
+    await ConversationDbProvider().addConversation(conversationInfo);
     state = [...state, conversationInfo];
   }
 
@@ -41,13 +39,15 @@ class ConversationList extends _$ConversationList {
   }
 
   Future<void> updateConversation(ConversationInfo conversationInfo) async {
-    await ConversationDbProvider()
-        .updateConversation(conversationInfo);
+    await ConversationDbProvider().updateConversation(conversationInfo);
 
     state = [
       for (final item in state)
         if (item.uuid == conversationInfo.uuid)
-          item.copyWith(name: conversationInfo.name)
+          item.copyWith(
+            name: conversationInfo.name,
+            model: conversationInfo.model,
+          )
         else
           item
     ];
@@ -61,8 +61,7 @@ class ConversationList extends _$ConversationList {
       ref.read(selectedConversationProvider.notifier).clear();
     }
 
-    await ConversationDbProvider()
-        .deleteConversation(conversationInfo.uuid);
+    await ConversationDbProvider().deleteConversation(conversationInfo.uuid);
     state = [
       for (final item in state)
         if (item.uuid != conversationInfo.uuid) item

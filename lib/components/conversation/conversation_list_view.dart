@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tony_chat_box/components/conversation/edit_conversation_dialog.dart';
 import 'package:tony_chat_box/database/conversation/conversation_info.dart';
 import 'package:tony_chat_box/device/form_factor.dart';
 import 'package:tony_chat_box/providers/conversation_list.dart';
@@ -19,6 +20,8 @@ class ConversationListView extends ConsumerStatefulWidget {
 }
 
 class _ConversationListViewState extends ConsumerState<ConversationListView> {
+  late bool _isPhoneSize;
+
   @override
   void initState() {
     final conversation = ref.read(conversationListProvider.notifier);
@@ -33,8 +36,7 @@ class _ConversationListViewState extends ConsumerState<ConversationListView> {
 
     final selectedConversation = ref.watch(selectedConversationProvider);
 
-    bool isPhoneSize =
-        MediaQuery.of(this.context).size.width < FormFactor.tablet;
+    _isPhoneSize = MediaQuery.of(this.context).size.width < FormFactor.tablet;
 
     return conversationList.isEmpty
         ? Center(
@@ -65,21 +67,27 @@ class _ConversationListViewState extends ConsumerState<ConversationListView> {
                   onTap: () {
                     _tapConversation(conversationList[index]);
 
-                    if (isPhoneSize) {
+                    if (_isPhoneSize) {
                       RouteUtil.jumpToChatPage(
                         this.context,
                         conversationId: conversationList[index].uuid,
                       );
                     }
                   },
-                  selected: !isPhoneSize &&
+                  selected: !_isPhoneSize &&
                       (selectedConversation.uuid ==
                           conversationList[index].uuid),
-                  leading: const Icon(Icons.chat),
                   title: Text(
                     conversationList[index].name,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
+                  ),
+                  trailing: Text(
+                    conversationList[index].model,
+                    style: const TextStyle(
+                      color: Colors.grey,
+                      fontSize: 10,
+                    ),
                   ),
                 ),
               );
@@ -105,65 +113,36 @@ class _ConversationListViewState extends ConsumerState<ConversationListView> {
           child: Text(AppLocalizations.of(context)!.delete),
         ),
         PopupMenuItem(
-          value: "rename",
-          child: Text(AppLocalizations.of(context)!.renameConversation),
+          value: "edit",
+          child: Text(AppLocalizations.of(context)!.edit),
         ),
       ],
     ).then((value) {
-      if (value == "delete") {
-        ref
-            .read(conversationListProvider.notifier)
-            .deleteConversation(conversationInfo);
-      } else if (value == "rename") {
-        _renameConversation(conversationInfo);
+      switch (value) {
+        case 'delete':
+          ref
+              .read(conversationListProvider.notifier)
+              .deleteConversation(conversationInfo);
+          break;
+        case 'edit':
+          _editConversation(conversationInfo);
+          break;
       }
     });
   }
 
-  void _renameConversation(ConversationInfo conversationInfo) {
-    final TextEditingController controller = TextEditingController();
-    controller.text = conversationInfo.name;
+  void _editConversation(ConversationInfo conversationInfo) {
+
 
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(AppLocalizations.of(context)!.renameConversation),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                controller: controller,
-                decoration: InputDecoration(
-                  labelText:
-                      AppLocalizations.of(context)!.enterNewConversationNameTip,
-                  hintText:
-                      AppLocalizations.of(context)!.enterNewConversationNameTip,
-                  floatingLabelBehavior: FloatingLabelBehavior.auto,
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide.none,
-                  ),
-                  filled: true,
-                ),
-                autovalidateMode: AutovalidateMode.always,
-                maxLines: null,
-              ),
-            ],
-          ),
+          title: Text(AppLocalizations.of(context)!.editConversation),
+          content: EditConversationDialog(conversationInfo),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text(AppLocalizations.of(context)!.cancel),
-            ),
-            TextButton(
-              onPressed: () {
-                ref.read(conversationListProvider.notifier).updateConversation(
-                    conversationInfo.copyWith(name: controller.text));
 
                 Navigator.of(context).pop();
               },
@@ -174,6 +153,8 @@ class _ConversationListViewState extends ConsumerState<ConversationListView> {
       },
     );
   }
+
+
 
   _tapConversation(ConversationInfo conversationInfo) {
     ref.read(selectedConversationProvider.notifier).update(conversationInfo);

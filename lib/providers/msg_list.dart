@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tiktoken/tiktoken.dart';
+import 'package:tony_chat_box/api/completions_api.dart';
 import 'package:tony_chat_box/configs/config_info.dart';
 import 'package:tony_chat_box/database/msg/message_db_provider.dart';
 import 'package:tony_chat_box/database/msg/msg_info.dart';
-import 'package:tony_chat_box/utils/api_client.dart';
 import 'package:tony_chat_box/utils/log_util.dart';
 import 'package:tony_chat_box/utils/sharded_preference/sp_keys.dart';
 import 'package:tony_chat_box/utils/sharded_preference/sp_util.dart';
@@ -36,6 +35,7 @@ class MsgList extends _$MsgList {
   }
 
   Future<void> sendMessage(
+    String model,
     MsgInfo userMsgInfo, {
     bool isRetry = false,
     VoidCallback? beforeSend,
@@ -62,11 +62,16 @@ class MsgList extends _$MsgList {
       text: "",
       roleInt: Role.assistant.index,
       stateInt: MsgState.sending.index,
-    ); //仅仅第一个返回了角色
+    );
 
-    state = [...state, newMsgInfo];
+    if (state.last.state == MsgState.failed &&
+        state.last.role == Role.assistant) {
+      state.last = newMsgInfo;
+    } else {
+      state = [...state, newMsgInfo];
+    }
 
-    if(beforeSend != null) {
+    if (beforeSend != null) {
       beforeSend();
     }
 
@@ -74,6 +79,7 @@ class MsgList extends _$MsgList {
 
     await postMessage(
       userMsgInfo.conversationId,
+      model,
       onSuccess: (responseData) async {
         String message = responseData['choices'][0]['message']['content'];
         String finishReason = responseData['choices'][0]['finish_reason'];
@@ -111,16 +117,17 @@ class MsgList extends _$MsgList {
           error = AppLocalizations.of(state as BuildContext)!.sendMsgErrTip;
         }
 
-        SmartDialog.showToast(error);
-
-        state = state.where((msgInfo) => msgInfo.id != null).toList();
-
         userMsgInfo = userMsgInfo.copyWith(stateInt: MsgState.failed.index);
         messageDbProvider.updateMessage(userMsgInfo);
 
         state = state.map((msgInfo) {
           if (msgInfo.id == userMsgInfo.id) {
             msgInfo = msgInfo.copyWith(stateInt: MsgState.failed.index);
+          } else if (msgInfo.id == newMsgInfo.id) {
+            msgInfo = msgInfo.copyWith(
+              stateInt: MsgState.failed.index,
+              text: error,
+            );
           }
 
           return msgInfo;
@@ -172,14 +179,11 @@ class MsgList extends _$MsgList {
   }
 
   Future<void> postMessage(
-    String conversationId, {
+    String conversationId,
+    String model, {
     ValueChanged<String>? onError,
     ValueChanged<Map<String, dynamic>>? onSuccess,
   }) async {
-    ConfigInfo configInfo = _getConfigInfo();
-
-    String model = configInfo.gptModel;
-
     var messageDbProvider = MessageDbProvider();
 
     List<MsgInfo> messages = await messageDbProvider
@@ -222,24 +226,15 @@ class MsgList extends _$MsgList {
 
     LogUtil.i("total tokens: $totalTokens");
 
-    var apiClient = ApiClient.getInstance();
-    apiClient.setBaseUrl(configInfo.baseUrl);
-    apiClient.setHeaders({
-      'Authorization': 'Bearer ${configInfo.key}',
-      'Content-Type': 'application/json',
-    });
-
-    if (configInfo.userProxy) {
-      apiClient.setProxy(configInfo.ip, configInfo.port);
-    }
+    var completionsApi = CompletionsApi();
+    completionsApi
+      ..params['model'] = model
+      ..params['messages'] = openAIMessages
+      ..params['max_tokens'] = 4097 -
+          totalTokens; // 4097 是 open ai 规定的最大 token 总数，messages 的 token 总数和 max_tokens 的和不能超过 4097;
 
     try {
-      final response = await apiClient.post('/v1/chat/completions', data: {
-        'model': model,
-        'messages': openAIMessages,
-        'max_tokens': 4097 - totalTokens,
-        // 4097 是 open ai 规定的最大 token 总数，messages 的 token 总数和 max_tokens 的和不能超过 4097
-      });
+      final response = await completionsApi.send();
 
       if (response.statusCode == 200) {
         if (onSuccess != null) {

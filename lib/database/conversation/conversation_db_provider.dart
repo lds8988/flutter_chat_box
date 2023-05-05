@@ -7,7 +7,7 @@ class ConversationDbProvider extends BaseDbProvider {
   static const String _tableConversationName = 'conversations';
   static const String _columnUuid = 'uuid';
   static const String _columnName = 'name';
-
+  static const String _columnModel = 'model';
 
   Future<List<ConversationInfo>> getConversations() async {
     final db = await getDataBase();
@@ -16,6 +16,16 @@ class ConversationDbProvider extends BaseDbProvider {
     return List.generate(maps.length, (i) {
       return ConversationInfo.fromJson(maps[i]);
     });
+  }
+
+  Future<ConversationInfo> getConversation(String conversationId) async {
+    final db = await getDataBase();
+    final List<Map<String, dynamic>> maps = await db.query(
+      _tableConversationName,
+      where: 'uuid = ?',
+      whereArgs: [conversationId],
+    );
+    return ConversationInfo.fromJson(maps[0]);
   }
 
   Future<void> addConversation(ConversationInfo conversation) async {
@@ -48,14 +58,13 @@ class ConversationDbProvider extends BaseDbProvider {
     });
   }
 
-
-
   @override
   String createTableString() {
     return '''
           CREATE TABLE $_tableConversationName (
             $_columnUuid TEXT PRIMARY KEY,
-            $_columnName TEXT
+            $_columnName TEXT,
+            $_columnModel TEXT
           )
         ''';
   }

@@ -4,7 +4,7 @@ import 'package:sqflite/sqflite.dart';
 class SqlManager {
   Database? _database;
 
-  static const _version = 3;
+  static const _version = 4;
   static const _name = 'chatgpt.db';
 
   SqlManager._internal() {
@@ -44,6 +44,14 @@ class SqlManager {
           batch.execute("INSERT INTO messages SELECT * FROM messages_old");
 
           batch.execute('DROP TABLE messages_old');
+
+          batch.commit();
+        }
+
+        if(oldVersion < 4) {
+          batch.execute('ALTER TABLE conversations ADD COLUMN model TEXT');
+
+          batch.execute("UPDATE conversations SET model = 'gpt-3.5-turbo'");
 
           batch.commit();
         }

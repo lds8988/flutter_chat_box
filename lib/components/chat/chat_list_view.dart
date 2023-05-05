@@ -74,14 +74,12 @@ class _ChatListViewState extends ConsumerState<ChatListView> {
 
                         if (metrics.maxScrollExtent == 0) {
                           if (_isReverse) {
-                            LogUtil.d('is do------>yes');
                             setState(() {
                               _isReverse = false;
                             });
                           }
                         } else {
                           if (!_isReverse) {
-                            LogUtil.d('is do------>yes');
                             setState(() {
                               _isReverse = true;
                             });
@@ -192,25 +190,23 @@ class _ChatListViewState extends ConsumerState<ChatListView> {
 
     _controller.text = "";
     if (message.isNotEmpty) {
-      var conversationUuid = ref.read(selectedConversationProvider).uuid;
-      if (conversationUuid.isEmpty) {
+      var conversationInfo = ref.read(selectedConversationProvider);
+      if (conversationInfo.uuid.isEmpty) {
         // new conversation
-        var conversationInfo = await ref
+        conversationInfo = await ref
             .read(conversationListProvider.notifier)
             .createConversation(message);
-
-        conversationUuid = conversationInfo.uuid;
       }
 
       MsgInfo newMessage = MsgInfo(
-        conversationId: conversationUuid,
+        conversationId: conversationInfo.uuid,
         roleInt: Role.user.index,
         text: message,
         stateInt: MsgState.sending.index,
       );
 
-
       await ref.read(msgListProvider.notifier).sendMessage(
+            conversationInfo.model,
             newMessage,
             beforeSend: () => _scrollController.scrollToIndex(0),
           );

@@ -22,6 +22,7 @@ ConversationInfo _$ConversationInfoFromJson(Map<String, dynamic> json) {
 mixin _$ConversationInfo {
   String get name => throw _privateConstructorUsedError;
   String get uuid => throw _privateConstructorUsedError;
+  String get model => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -35,7 +36,7 @@ abstract class $ConversationInfoCopyWith<$Res> {
           ConversationInfo value, $Res Function(ConversationInfo) then) =
       _$ConversationInfoCopyWithImpl<$Res, ConversationInfo>;
   @useResult
-  $Res call({String name, String uuid});
+  $Res call({String name, String uuid, String model});
 }
 
 /// @nodoc
@@ -53,6 +54,7 @@ class _$ConversationInfoCopyWithImpl<$Res, $Val extends ConversationInfo>
   $Res call({
     Object? name = null,
     Object? uuid = null,
+    Object? model = null,
   }) {
     return _then(_value.copyWith(
       name: null == name
@@ -62,6 +64,10 @@ class _$ConversationInfoCopyWithImpl<$Res, $Val extends ConversationInfo>
       uuid: null == uuid
           ? _value.uuid
           : uuid // ignore: cast_nullable_to_non_nullable
+              as String,
+      model: null == model
+          ? _value.model
+          : model // ignore: cast_nullable_to_non_nullable
               as String,
     ) as $Val);
   }
@@ -75,7 +81,7 @@ abstract class _$$_ConversationInfoCopyWith<$Res>
       __$$_ConversationInfoCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String name, String uuid});
+  $Res call({String name, String uuid, String model});
 }
 
 /// @nodoc
@@ -91,6 +97,7 @@ class __$$_ConversationInfoCopyWithImpl<$Res>
   $Res call({
     Object? name = null,
     Object? uuid = null,
+    Object? model = null,
   }) {
     return _then(_$_ConversationInfo(
       name: null == name
@@ -101,6 +108,10 @@ class __$$_ConversationInfoCopyWithImpl<$Res>
           ? _value.uuid
           : uuid // ignore: cast_nullable_to_non_nullable
               as String,
+      model: null == model
+          ? _value.model
+          : model // ignore: cast_nullable_to_non_nullable
+              as String,
     ));
   }
 }
@@ -108,7 +119,8 @@ class __$$_ConversationInfoCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$_ConversationInfo implements _ConversationInfo {
-  _$_ConversationInfo({required this.name, required this.uuid});
+  _$_ConversationInfo(
+      {required this.name, required this.uuid, this.model = 'gpt-3.5-turbo'});
 
   factory _$_ConversationInfo.fromJson(Map<String, dynamic> json) =>
       _$$_ConversationInfoFromJson(json);
@@ -117,10 +129,13 @@ class _$_ConversationInfo implements _ConversationInfo {
   final String name;
   @override
   final String uuid;
+  @override
+  @JsonKey()
+  final String model;
 
   @override
   String toString() {
-    return 'ConversationInfo(name: $name, uuid: $uuid)';
+    return 'ConversationInfo(name: $name, uuid: $uuid, model: $model)';
   }
 
   @override
@@ -129,12 +144,13 @@ class _$_ConversationInfo implements _ConversationInfo {
         (other.runtimeType == runtimeType &&
             other is _$_ConversationInfo &&
             (identical(other.name, name) || other.name == name) &&
-            (identical(other.uuid, uuid) || other.uuid == uuid));
+            (identical(other.uuid, uuid) || other.uuid == uuid) &&
+            (identical(other.model, model) || other.model == model));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(runtimeType, name, uuid);
+  int get hashCode => Object.hash(runtimeType, name, uuid, model);
 
   @JsonKey(ignore: true)
   @override
@@ -153,7 +169,8 @@ class _$_ConversationInfo implements _ConversationInfo {
 abstract class _ConversationInfo implements ConversationInfo {
   factory _ConversationInfo(
       {required final String name,
-      required final String uuid}) = _$_ConversationInfo;
+      required final String uuid,
+      final String model}) = _$_ConversationInfo;
 
   factory _ConversationInfo.fromJson(Map<String, dynamic> json) =
       _$_ConversationInfo.fromJson;
@@ -162,6 +179,8 @@ abstract class _ConversationInfo implements ConversationInfo {
   String get name;
   @override
   String get uuid;
+  @override
+  String get model;
   @override
   @JsonKey(ignore: true)
   _$$_ConversationInfoCopyWith<_$_ConversationInfo> get copyWith =>

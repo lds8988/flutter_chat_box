@@ -44,7 +44,10 @@ class _ChatPageState extends ConsumerState<ChatPage>
             stateInt: MsgState.sending.index,
           );
 
-          ref.read(msgListProvider.notifier).sendMessage(newMessage);
+          ref.read(msgListProvider.notifier).sendMessage(
+                conversationInfo.model,
+                newMessage,
+              );
         });
       });
     }
@@ -59,7 +62,6 @@ class _ChatPageState extends ConsumerState<ChatPage>
     if (MediaQuery.of(context).viewInsets.bottom > 0 &&
         _scrollController.position.pixels !=
             _scrollController.position.maxScrollExtent) {
-
       _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
     }
   }

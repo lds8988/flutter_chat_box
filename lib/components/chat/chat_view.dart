@@ -6,6 +6,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:markdown_widget/markdown_widget.dart';
 import 'package:tony_chat_box/configs/config.dart';
 import 'package:tony_chat_box/configs/config_info.dart';
+import 'package:tony_chat_box/database/conversation/conversation_db_provider.dart';
 import 'package:tony_chat_box/database/msg/msg_info.dart';
 import 'package:tony_chat_box/providers/msg_list.dart';
 
@@ -26,7 +27,6 @@ class ChatView extends ConsumerStatefulWidget {
 }
 
 class _ChatViewState extends ConsumerState<ChatView> {
-
   @override
   Widget build(BuildContext context) {
     var isUser = widget.msgInfo.role == Role.user;
@@ -41,11 +41,8 @@ class _ChatViewState extends ConsumerState<ChatView> {
           children: [
             if (isUser && widget.msgInfo.state == MsgState.failed)
               GestureDetector(
-                onTap: () {
-                  ref.read(msgListProvider.notifier).sendMessage(
-                        widget.msgInfo,
-                        isRetry: true,
-                      );
+                onTap: () async {
+                  _sendMessage(widget.msgInfo, true);
                 },
                 child: Container(
                   height: 24,
@@ -94,7 +91,6 @@ class _ChatViewState extends ConsumerState<ChatView> {
   }
 
   Widget buildReplyContent() {
-
     ConfigInfo configInfo = ref.read(configProvider);
 
     final config = configInfo.isDark
@@ -127,9 +123,7 @@ class _ChatViewState extends ConsumerState<ChatView> {
                 stateInt: MsgState.sending.index,
               );
 
-              ref.read(msgListProvider.notifier).sendMessage(
-                    newMessage,
-                  );
+              _sendMessage(newMessage, false);
             },
             child: Container(
                 width: double.infinity,
@@ -143,5 +137,16 @@ class _ChatViewState extends ConsumerState<ChatView> {
     }
 
     return replyContent;
+  }
+
+  Future<void> _sendMessage(MsgInfo msgInfo, bool isRetry) async {
+    var conversationInfo = await ConversationDbProvider()
+        .getConversation(msgInfo.conversationId);
+
+    ref.read(msgListProvider.notifier).sendMessage(
+      conversationInfo.model,
+      msgInfo,
+      isRetry: isRetry,
+    );
   }
 }

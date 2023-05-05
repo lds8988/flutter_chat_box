@@ -8,7 +8,6 @@ class SPUtil{
   factory SPUtil.getInstance() => _instance ??= SPUtil._initial();
   SharedPreferences? _preferences;
 
-  //创建命名构造函数
   SPUtil._initial();
 
   static Future<SPUtil?> perInit() async {

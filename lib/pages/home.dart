@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:tony_chat_box/components/chat/chat_list_view.dart';
-import 'package:tony_chat_box/components/conversation_list_view.dart';
+import 'package:tony_chat_box/components/conversation/conversation_list_view.dart';
 import 'package:tony_chat_box/configs/config.dart';
 import 'package:tony_chat_box/configs/config_info.dart';
 import 'package:tony_chat_box/database/assistant/assistant_db_provider.dart';
