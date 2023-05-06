@@ -1,12 +1,10 @@
 {
   "appTitle": "ChatGPT",
-  "toSecondPage": "to second page",
-  "secondPage": "this is the second Page",
-  "countTimes": "current total count is:",
   "noConversationTips": "It seems like there is no conversation. Click the square on the right to quickly create one, or simply send a question to create one.",
   "noConversationTipsPhone": "It seems there is no conversation. \nClick the button below to quickly create one.",
   "newConversation": "New Conversation",
   "editConversation": "Edit Conversation",
+  "conversationName": "Conversation Name",
   "enterNewConversationNameTip": "please enter the new conversation name",
   "settings": "Settings",
   "theme": "is use dark mode",
@@ -35,5 +33,8 @@
   "setPort": "input port number",
   "setPortTip": "input port number here please",
   "continueConversation": "continue",
-  "isUseProxy": "is use proxy"
+  "isUseProxy": "is use proxy",
+  "enterPromptTip": "Enter new prompt please",
+  "promptEmptyTip": "prompt can not be empty",
+  "add": "add"
 }

@@ -3,7 +3,6 @@ import 'package:tony_chat_box/database/assistant/assistant_info.dart';
 import 'package:tony_chat_box/database/base_db_provider.dart';
 import 'package:tony_chat_box/database/prompt/prompt_db_provider.dart';
 import 'package:tony_chat_box/database/sql_manager.dart';
-import 'package:tony_chat_box/utils/log_util.dart';
 import 'package:uuid/uuid.dart';
 
 class AssistantDbProvider extends BaseDbProvider {

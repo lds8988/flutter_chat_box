@@ -96,7 +96,7 @@ class MessageDbProvider extends BaseDbProvider {
     final db = await getDataBase();
     var batch = db.batch();
 
-    var prompts = await PromptDbProvider().getPromptsByRobotId(assistantId);
+    var prompts = await PromptDbProvider().getPromptsByAssistantId(assistantId);
 
     for (var prompt in prompts) {
       var systemMsgInfo = MsgInfo(
@@ -143,7 +143,7 @@ class MessageDbProvider extends BaseDbProvider {
              $_columnText TEXT,
              $_columnState INTEGER,
              $_columnFinishReason TEXT,
-             FOREIGN KEY ($_columnUuid) REFERENCES conversations($_columnUuid)
+             FOREIGN KEY ($_columnUuid) REFERENCES conversations($_columnUuid) ON DELETE CASCADE
            )
          ''';
   }

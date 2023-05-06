@@ -15,7 +15,7 @@ class PromptDbProvider extends BaseDbProvider {
              $_columnId INTEGER PRIMARY KEY AUTOINCREMENT,
              $_columnAssistantId INTEGER,
              $_columnContent TEXT,
-             FOREIGN KEY ($_columnAssistantId) REFERENCES assistant(id)
+             FOREIGN KEY ($_columnAssistantId) REFERENCES assistant(id) ON DELETE CASCADE
            )
          ''';
   }
@@ -25,7 +25,7 @@ class PromptDbProvider extends BaseDbProvider {
     return _tableName;
   }
 
-  Future<List<PromptInfo>> getPromptsByRobotId(String assistantId) async {
+  Future<List<PromptInfo>> getPromptsByAssistantId(String assistantId) async {
     Database db = await getDataBase();
     List<Map<String, dynamic>> maps = await db.query(
       _tableName,

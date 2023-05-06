@@ -1,12 +1,10 @@
 {
   "appTitle": "ChatGPT",
-  "toSecondPage": "去到第二页",
-  "secondPage": "这里上第二页",
-  "countTimes": "当前的数字是：",
   "noConversationTips": "似乎没有会话，点击右侧方块快速创建一个，或简单地发送一次提问创建一个",
   "noConversationTipsPhone": "似乎没有会话，点击下方按钮快速创建一个",
   "newConversation": "创建新会话",
   "editConversation": "编辑会话",
+  "conversationName": "会话名称",
   "enterNewConversationNameTip": "请输入新的会话名称",
   "settings": "设置",
   "theme": "是否打开暗黑模式",
@@ -35,5 +33,8 @@
   "setPort": "请输入端口号",
   "setPortTip": "请在这里输入端口号",
   "continueConversation": "继续",
-  "isUseProxy": "是否使用代理"
+  "isUseProxy": "是否使用代理",
+  "enterPromptTip": "请输入新的 prompt",
+  "promptEmptyTip": "prompt 不能为空",
+  "add": "添加"
 }

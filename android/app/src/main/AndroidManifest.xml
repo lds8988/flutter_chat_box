@@ -4,7 +4,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
    <application
-        android:label="Tony Chat Box"
+        android:label="Chat Box"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

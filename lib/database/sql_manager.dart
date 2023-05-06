@@ -4,7 +4,7 @@ import 'package:sqflite/sqflite.dart';
 class SqlManager {
   Database? _database;
 
-  static const _version = 4;
+  static const _version = 5;
   static const _name = 'chatgpt.db';
 
   SqlManager._internal() {
@@ -45,7 +45,6 @@ class SqlManager {
 
           batch.execute('DROP TABLE messages_old');
 
-          batch.commit();
         }
 
         if(oldVersion < 4) {
@@ -53,8 +52,24 @@ class SqlManager {
 
           batch.execute("UPDATE conversations SET model = 'gpt-3.5-turbo'");
 
-          batch.commit();
         }
+
+        if(oldVersion < 5) {
+          batch.execute('ALTER TABLE prompt RENAME TO prompt_old');
+          batch.execute('''
+              CREATE TABLE prompt (
+             id INTEGER PRIMARY KEY AUTOINCREMENT,
+             assistant_id INTEGER,
+             content TEXT,
+             FOREIGN KEY (assistant_id) REFERENCES assistant(id) ON DELETE CASCADE
+           )
+            ''');
+          batch.execute("INSERT INTO prompt SELECT * FROM prompt_old");
+
+          batch.execute('DROP TABLE prompt_old');
+        }
+
+        batch.commit();
       },
     );
   }
